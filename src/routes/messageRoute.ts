@@ -5,6 +5,7 @@ import * as messageController from '../controllers/messageController'
 
 const router = Router()
 
+router.get('/getAll', messageController.getPublicMessages)
 router.get('/:id', messageController.getMessageById)
 // router.post('/messages', messageController.createMessage)
 
