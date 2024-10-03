@@ -11,7 +11,7 @@ export interface IPublicMessage extends Document {
 
 const messageSchema: Schema = new Schema({
   sender: { type: mongoose.Schema.Types.String, required: true },
-  senderMessage: { type: String },
+  message: { type: String },
   createdAt: { type: Date, default: Date.now }
 })
 

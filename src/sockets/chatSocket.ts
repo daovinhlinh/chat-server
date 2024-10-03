@@ -56,13 +56,13 @@ export default function chatSocket(io: Server) {
           // Save the message to the database
           const newMessage = new PublicMessage({
             sender: sender,
-            senderMessage: message
+            message
           })
 
           newMessage.save()
 
           const messageSend = {
-            messageId: newMessage.id,
+            _id: newMessage.id,
             sender,
             senderName: decoded.fullName,
             message: message,
