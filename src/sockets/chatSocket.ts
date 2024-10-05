@@ -1,37 +1,17 @@
 import { jwtDecode } from 'jwt-decode'
 import { Server, Socket } from 'socket.io'
+import { ISocketUser } from '~/contracts/socket'
 import Chat from '~/models/Chat'
 import PrivateMessage from '~/models/PrivateMessage'
 import PublicMessage from '~/models/PublicMessage'
 import Message from '~/models/PublicMessage'
-import { SocketUser } from './index'
+import { User } from '~/models/User'
+import { chatService } from '~/services'
 // import User from '~/models/User'
 
 export default function chatSocket(io: Server) {
   io.on('connection', (socket: Socket) => {
     // const { id, username } = socket.data.user ? (socket.data.user as SocketUser) : { id: '', username: '' }
-
-    // Handle user connection
-    socket.on('connectSocket', async ({ username }) => {
-      const token = socket.handshake.auth.token as string
-      const decoded = jwtDecode(token) as SocketUser
-      // console.log('decoded:', decoded)
-
-      if (decoded && decoded.username === username) {
-        console.log('join channel', username)
-        socket.join(decoded.username)
-        socket.join('publicChannel')
-        // socket.emit('connected')
-      }
-      // Join the user to the groups
-      // for (const group of groups) {
-      //   socket.join(group.id)
-      // }
-      // // Save the user's room
-      // const allRooms = [...groups.map((group) => group._id.toString()), username]
-      // userRoomMap.set(username, allRooms)
-      // socket.emit('connected')
-    })
 
     // Check if the user is online
     // socket.on('checkOnline', async ({ username }) => {
@@ -47,31 +27,37 @@ export default function chatSocket(io: Server) {
     //Chat all
     socket.on('sendPublicMessage', async ({ sender, message }) => {
       try {
-        const token = socket.handshake.auth.token as string
+        const senderUser = await User.findById(sender).exec()
+        console.log('Sender:', senderUser)
 
-        const decoded = jwtDecode(token) as SocketUser
-
-        if (decoded && decoded.username === sender) {
-          console.log('Message:', message)
-          // Save the message to the database
-          const newMessage = new PublicMessage({
-            sender: sender,
-            message
+        if (!senderUser) {
+          socket.emit('sendMessageFailure', {
+            error: 'Sender not found'
           })
-
-          newMessage.save()
-
-          const messageSend = {
-            _id: newMessage.id,
-            sender,
-            senderName: decoded.fullName,
-            message: message,
-            createAt: newMessage.createdAt
-          }
-
-          socket.broadcast.to('publicChannel').emit('receivePublicMessage', messageSend)
-          // io.emit('receiveMessage', messageSend)
+          return
         }
+
+        console.log('Message:', message)
+        // Save the message to the database
+        const newMessage = new PublicMessage({
+          sender: sender,
+          message
+        })
+
+        newMessage.save()
+
+        const messageSend = {
+          _id: newMessage.id,
+          sender: senderUser,
+          // senderName: decoded.fullName,
+          message: message,
+          createAt: newMessage.createdAt
+        }
+
+        socket.broadcast
+          .to('publicChannel')
+          .emit('receivePublicMessage', messageSend)
+        // io.emit('receiveMessage', messageSend)
       } catch (error) {
         console.error('Error sending group message:', error)
         socket.emit('sendMessageFailure', error)
@@ -80,25 +66,30 @@ export default function chatSocket(io: Server) {
 
     // Handle private message
     socket.on('sendMessage', async ({ sender, recipient, message }) => {
+      console.log('sendMessage', sender, recipient, message)
+
       try {
-        const token = socket.handshake.auth.token as string
-
-        const decoded = jwtDecode(token) as SocketUser
-
+        const senderUser = await User.findOne({ username: sender }).exec()
+        if (!senderUser) {
+          socket.emit('sendMessageFailure', {
+            error: 'Sender not found'
+          })
+          return
+        }
         // Find sender and recipient users
         //const harshedSender = hashData(sender)
 
-        if (!decoded) {
-          console.log('Sender not found:', sender)
-          socket.emit('sendMessageFailure', 'Sender not found')
-          return
-        }
+        // if (!decoded) {
+        //   console.log('Sender not found:', sender)
+        //   socket.emit('sendMessageFailure', 'Sender not found')
+        //   return
+        // }
 
-        console.log('Sender:', decoded)
+        // console.log('Sender:', decoded)
 
         //const harshedRecipient = hashData(recipient)
-        // const recipientUser = await User.findOne({ username: recipient }).exec()
-        if (!recipient) {
+        const recipientUser = await User.findOne({ username: recipient }).exec()
+        if (!recipientUser) {
           console.log('Recipient not found:', recipient)
           socket.emit('sendMessageFailure', 'Recipient not found')
           return
@@ -108,18 +99,21 @@ export default function chatSocket(io: Server) {
 
         // Check if Chat is created between sender and recipient
         let chat = await Chat.findOne({
-          $or: [{ members: [sender, recipient] }, { members: [recipient, sender] }]
+          $or: [
+            { members: [sender, recipient] },
+            { members: [recipient, sender] }
+          ]
         }).exec()
 
         console.log('Chat:', chat)
         if (!chat) {
           // Create a new chat
           console.log('Create new chat')
-
-          chat = new Chat({
-            members: [sender, recipient]
-          })
-          chat.save()
+          chat = await chatService.create([sender, recipient])
+          // chat = new Chat({
+          //   members: [sender, recipient]
+          // })
+          // chat.save()
           socket.to(recipient).emit('newChat', chat)
           socket.emit('newChat', chat)
         }
@@ -136,8 +130,8 @@ export default function chatSocket(io: Server) {
 
         const messageSend = {
           _id: newMessage.id,
-          sender,
-          recipient,
+          sender: senderUser,
+          recipient: recipientUser,
           chat: chat.id,
           message,
           createdAt: newMessage.createdAt

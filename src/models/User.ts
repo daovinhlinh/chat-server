@@ -1,20 +1,52 @@
-import mongoose, { Document } from 'mongoose'
+import { Schema, model } from 'mongoose'
+import { compareSync } from 'bcrypt'
+import { IUser, IUserMethods, UserModel } from '~/contracts/user'
 
-export interface IUser extends Document {
-  username: string
-  email: string
-  lastName: string
-  firstName: string
-  fullName: string
-  isVerified: boolean
-  phoneNumber: string
-  isDisabled: boolean
-  balance: number
-  vnd: any
-  binanceId: string
-  enabledMfa: boolean
-  refId: string
-  refCode: any
+const schema = new Schema<IUser, UserModel, IUserMethods>(
+  {
+    username: {
+      type: String,
+      required: true
+    },
+    email: {
+      type: String
+    },
+    password: {
+      type: String,
+      required: true
+    },
+    firstName: {
+      type: String,
+      required: true
+    },
+    lastName: {
+      type: String,
+      required: true
+    },
+    phoneNumber: { type: String },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user'
+    },
+    verified: {
+      type: Boolean,
+      default: false
+    }
+  },
+  { timestamps: true }
+)
+
+schema.methods.comparePassword = function (password: string) {
+  return compareSync(password, this.password)
 }
 
-// export default mongoose.model<IUser>('User', userSchema)
+schema.methods.toJSON = function () {
+  const obj = this.toObject()
+
+  delete obj.password
+
+  return obj
+}
+
+export const User = model<IUser, UserModel>('User', schema)

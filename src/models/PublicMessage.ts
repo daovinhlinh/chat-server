@@ -1,18 +1,19 @@
-import mongoose, { Schema, Document } from 'mongoose'
-// import { IGroup } from './Group'
-// import { IUser } from './User'
-// import { IChat } from './Chat'
+import mongoose, { Schema } from 'mongoose'
+import { IPublicMessage, PublicMessageModel } from '~/contracts/message'
 
-export interface IPublicMessage extends Document {
-  sender: string
-  message: string
-  createdAt: Date
-}
+const schema: Schema = new Schema<IPublicMessage, PublicMessageModel>(
+  {
+    sender: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    message: { type: String }
+  },
+  { timestamps: true }
+)
 
-const messageSchema: Schema = new Schema({
-  sender: { type: mongoose.Schema.Types.String, required: true },
-  message: { type: String },
-  createdAt: { type: Date, default: Date.now }
-})
-
-export default mongoose.model<IPublicMessage>('PublicMessage', messageSchema)
+export default mongoose.model<IPublicMessage, PublicMessageModel>(
+  'PublicMessage',
+  schema
+)

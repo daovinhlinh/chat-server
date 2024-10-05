@@ -1,6 +1,5 @@
-import mongoose, { ConnectOptions } from 'mongoose'
+import { connect, ConnectOptions } from 'mongoose'
 import dotenv from 'dotenv'
-import mysql2 from 'mysql2'
 
 dotenv.config()
 
@@ -21,29 +20,48 @@ const options: ConnectOptions = {
 }
 console.log(host, options)
 
-const connectDB = async () => {
-  try {
-    const db = await mongoose.connect(`mongodb+srv://${host}`, options)
-    console.log('Connected to MongoDB at', host)
-    return db
-  } catch (error) {
-    console.error('MongoDB connection error:', error)
+// const connectDB = async () => {
+//   try {
+//     const db = await mongoose.connect(`mongodb+srv://${host}`, options)
+//     console.log('Connected to MongoDB at', host)
+//     return db
+//   } catch (error) {
+//     console.error('MongoDB connection error:', error)
+//   }
+//   // .then((db) => {
+//   //   console.log('Connected to MongoDB at', host)
+//   //   return db
+//   // })
+//   // .catch((error) => {
+//   //   console.error('MongoDB connection error:', error)
+//   // })
+// }
+
+export const mongooseDb = {
+  run: async () => {
+    try {
+      const db = await connect(`mongodb+srv://${host}`, options)
+      console.log('Connected to MongoDB at', host)
+      return db
+    } catch (error) {
+      console.error('MongoDB connection error:', error)
+    }
+    // .then((db) => {
+    //   console.log('Connected to MongoDB at', host)
+    //   return db
+    // })
+    // .catch((error) => {
+    //   console.error('MongoDB connection error:', error)
+    // })
   }
-  // .then((db) => {
-  //   console.log('Connected to MongoDB at', host)
-  //   return db
-  // })
-  // .catch((error) => {
-  //   console.error('MongoDB connection error:', error)
-  // })
 }
 
-const pool = mysql2.createPool({
-  connectionLimit: 10,
-  host: host,
-  user: username,
-  password: password,
-  database: database
-})
+// const pool = mysql2.createPool({
+//   connectionLimit: 10,
+//   host: host,
+//   user: username,
+//   password: password,
+//   database: database
+// })
 
-export default connectDB
+// export default connectDB

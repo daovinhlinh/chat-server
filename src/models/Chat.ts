@@ -1,13 +1,11 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Document, Schema } from 'mongoose'
+import { ChatModel, IChat } from '~/contracts/chat'
 
-export interface IChat extends Document {
-  members: string[]
-  createdAt: Date
-}
+const schema: Schema = new Schema<IChat, ChatModel>(
+  {
+    members: [{ type: mongoose.Schema.Types.String, required: true }]
+  },
+  { timestamps: true }
+)
 
-const chatSchema: Schema = new Schema({
-  members: [{ type: mongoose.Schema.Types.String, required: true }],
-  createdAt: { type: Date, default: Date.now }
-})
-
-export default mongoose.model<IChat>('Chat', chatSchema)
+export default mongoose.model<IChat, ChatModel>('Chat', schema)

@@ -1,10 +1,13 @@
 import { Request, Response } from 'express'
-import * as messageService from '../services/messageService'
+import { messageService } from '~/services'
 
 type GetMessageByIdRequest = Request<{ id: string }, any, any, any>
 type GetPublicMessage = Request<any, any, any, { page: number; limit: number }>
 
-export async function getMessageById(req: GetMessageByIdRequest, res: Response): Promise<void> {
+export async function getMessageById(
+  req: GetMessageByIdRequest,
+  res: Response
+): Promise<void> {
   console.log('getMessageById', req.params.id)
 
   try {
@@ -16,9 +19,15 @@ export async function getMessageById(req: GetMessageByIdRequest, res: Response):
   }
 }
 
-export const getPublicMessages = async (req: GetPublicMessage, res: Response) => {
+export const getPublicMessages = async (
+  req: GetPublicMessage,
+  res: Response
+) => {
   try {
-    const messages = await messageService.getPublicMessages(req.query.page, req.query.limit)
+    const messages = await messageService.getPublicMessages(
+      req.query.page,
+      req.query.limit
+    )
     res.json(messages)
   } catch (error) {
     console.error(error)
