@@ -8,7 +8,6 @@ const host = process.env.DB_HOST
 const password = process.env.DB_PASSWORD
 const database = process.env.DB_NAME
 const port = process.env.DB_PORT || '3306'
-console.log('port', port)
 
 const options: ConnectOptions = {
   user: username,
@@ -18,7 +17,6 @@ const options: ConnectOptions = {
   // database: database,
   // port: parseInt(port)
 }
-console.log(host, options)
 
 // const connectDB = async () => {
 //   try {

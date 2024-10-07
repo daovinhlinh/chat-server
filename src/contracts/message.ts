@@ -22,3 +22,5 @@ export interface IPrivateMessage {
 }
 
 export type PrivateMessageModel = Model<IPrivateMessage, unknown>
+
+export type GetPrivateMessagePayload = Pick<IPrivateMessage, 'id'>

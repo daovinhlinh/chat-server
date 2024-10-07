@@ -15,3 +15,14 @@ export enum ImageSizeInMb {
 export enum MediaRefType {
   User = 'User'
 }
+
+export enum RollResultType {
+  Over = 0,
+  Under = 1
+}
+
+export const CustomReasonPhrases = {
+  PASSWORD_NOT_MATCH: 'Password not match',
+  WRONG_USERNAME_PASSWORD: 'Wrong username or password',
+  ALREADY_CHECKED_IN: 'User already checked in'
+}

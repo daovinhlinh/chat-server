@@ -17,7 +17,6 @@ export const authGuard = {
       status: StatusCodes.UNAUTHORIZED
     })
   },
-
   isGuest: (
     { context: { user } }: IContextRequest<IUserRequest>,
     res: Response,
@@ -32,7 +31,6 @@ export const authGuard = {
       status: StatusCodes.FORBIDDEN
     })
   },
-
   isVerified: (
     {
       context: {
@@ -51,7 +49,6 @@ export const authGuard = {
       status: StatusCodes.FORBIDDEN
     })
   },
-
   isUnverfied: (
     {
       context: {
@@ -62,6 +59,20 @@ export const authGuard = {
     next: NextFunction
   ) => {
     if (!verified) {
+      return next()
+    }
+
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: ReasonPhrases.FORBIDDEN,
+      status: StatusCodes.FORBIDDEN
+    })
+  },
+  isAdmin: (
+    { context: { user } }: IContextRequest<IUserRequest>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    if (user.role === 'admin') {
       return next()
     }
 

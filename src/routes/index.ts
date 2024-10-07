@@ -3,11 +3,13 @@ import { Router } from 'express'
 import { chat } from './chat'
 import { message } from './message'
 import { auth } from './auth'
+import { user } from './user'
+import { game } from './game'
 
 const router: Router = Router()
 const routes: {
   [key: string]: (router: Router) => void
-} = { chat, message, auth }
+} = { chat, message, auth, user, game }
 
 router.get('/', (req, res) => {
   res.redirect('/api/v1/health')

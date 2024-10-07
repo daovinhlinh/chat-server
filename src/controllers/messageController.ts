@@ -1,21 +1,33 @@
 import { Request, Response } from 'express'
+import { ReasonPhrases, StatusCodes } from 'http-status-codes'
+import winston from 'winston'
+import { GetPrivateMessagePayload } from '~/contracts/message'
+import { ICombinedRequest, IUserRequest } from '~/contracts/request'
 import { messageService } from '~/services'
 
-type GetMessageByIdRequest = Request<{ id: string }, any, any, any>
 type GetPublicMessage = Request<any, any, any, { page: number; limit: number }>
 
 export async function getMessageById(
-  req: GetMessageByIdRequest,
+  {
+    context: { user },
+    params: { id }
+  }: ICombinedRequest<IUserRequest, unknown, GetPrivateMessagePayload, unknown>,
   res: Response
-): Promise<void> {
-  console.log('getMessageById', req.params.id)
-
+) {
   try {
-    const messages = await messageService.getById(req.params.id)
-    res.json(messages)
+    const messages = await messageService.getById(id, user.id)
+    return res.status(StatusCodes.OK).json({
+      data: messages,
+      message: ReasonPhrases.OK,
+      status: StatusCodes.OK
+    })
   } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: 'Internal server error' })
+    winston.error(error)
+
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: ReasonPhrases.BAD_REQUEST,
+      status: StatusCodes.BAD_REQUEST
+    })
   }
 }
 
@@ -24,24 +36,23 @@ export const getPublicMessages = async (
   res: Response
 ) => {
   try {
-    const messages = await messageService.getPublicMessages(
+    const { docs, page, totalPages } = await messageService.getPublicMessages(
       req.query.page,
       req.query.limit
     )
-    res.json(messages)
+    // res.json(messages)
+    return res.status(StatusCodes.OK).json({
+      data: { docs, page, totalPages },
+      message: ReasonPhrases.OK,
+      status: StatusCodes.OK
+    })
   } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: 'Internal server error' })
+    console.log(error)
+
+    winston.error(error)
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: ReasonPhrases.BAD_REQUEST,
+      status: StatusCodes.BAD_REQUEST
+    })
   }
 }
-
-// export async function createMessage(req: Request, res: Response): Promise<void> {
-//   try {
-//     const { text } = req.body
-//     const message = await messageService.addMessage(text)
-//     res.status(201).json(message)
-//   } catch (error) {
-//     console.error(error)
-//     res.status(500).json({ message: 'Internal server error' })
-//   }
-// }

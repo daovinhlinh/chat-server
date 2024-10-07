@@ -69,7 +69,7 @@ export default function chatSocket(io: Server) {
       console.log('sendMessage', sender, recipient, message)
 
       try {
-        const senderUser = await User.findOne({ username: sender }).exec()
+        const senderUser = await User.findById(sender).exec()
         if (!senderUser) {
           socket.emit('sendMessageFailure', {
             error: 'Sender not found'
@@ -88,7 +88,7 @@ export default function chatSocket(io: Server) {
         // console.log('Sender:', decoded)
 
         //const harshedRecipient = hashData(recipient)
-        const recipientUser = await User.findOne({ username: recipient }).exec()
+        const recipientUser = await User.findById(recipient).exec()
         if (!recipientUser) {
           console.log('Recipient not found:', recipient)
           socket.emit('sendMessageFailure', 'Recipient not found')
@@ -120,9 +120,9 @@ export default function chatSocket(io: Server) {
 
         // Save the message to the database
         const newMessage = new PrivateMessage({
-          sender: sender,
+          sender: sender, //sender ID
           chat: chat.id,
-          recipient: recipient,
+          recipient: recipient, //recipient ID
           message
         })
 

@@ -15,7 +15,7 @@ export const chatController = {
       })
     }
 
-    const chats = await chatService.getAll(user.username)
+    const chats = await chatService.getAll(user.id)
 
     return res.status(StatusCodes.OK).json({
       data: chats,

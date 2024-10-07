@@ -2,7 +2,7 @@ import { Model, ObjectId } from 'mongoose'
 
 export interface IChat {
   id: ObjectId
-  members: string[]
+  members: ObjectId[]
   createdAt: Date
 }
 

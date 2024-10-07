@@ -3,7 +3,7 @@ import { startSession } from 'mongoose'
 import { StatusCodes, ReasonPhrases } from 'http-status-codes'
 import winston from 'winston'
 
-import { ExpiresInDays } from '~/constants'
+import { CustomReasonPhrases, ExpiresInDays } from '~/constants'
 import { SignInPayload, SignUpPayload } from '~/contracts/auth'
 import { IBodyRequest } from '~/contracts/request'
 import { userService } from '~/services'
@@ -22,7 +22,7 @@ const signIn = async (
     const comparePassword = userDoc?.comparePassword(password)
     if (!userDoc || !comparePassword) {
       return res.status(StatusCodes.NOT_FOUND).json({
-        message: ReasonPhrases.NOT_FOUND,
+        message: CustomReasonPhrases.WRONG_USERNAME_PASSWORD,
         status: StatusCodes.NOT_FOUND
       })
     }
