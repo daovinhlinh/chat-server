@@ -24,6 +24,10 @@ const schema = new Schema<IUser, UserModel, IUserMethods>(
       required: true
     },
     phoneNumber: { type: String },
+    coins: {
+      type: Number,
+      default: 0
+    },
     role: {
       type: String,
       enum: ['user', 'admin'],

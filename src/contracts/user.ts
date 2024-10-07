@@ -9,6 +9,7 @@ export interface IUser {
   lastName: string
   phoneNumber?: string
   role: 'user' | 'admin'
+  coins: number
   verified: boolean
   createdAt: Date
 }
@@ -20,7 +21,7 @@ export interface IUserMethods {
 export type UserModel = Model<IUser, unknown, IUserMethods>
 
 export type UpdateProfilePayload = Required<
-  Pick<IUser, 'firstName' | 'lastName'>
+  Pick<IUser, 'firstName' | 'lastName' | 'email' | 'phoneNumber'>
 >
 
 export type UpdateEmailPayload = Pick<IUser, 'email' | 'password'>
@@ -31,5 +32,12 @@ export interface UpdatePasswordPayload {
 }
 
 export interface DeleteProfilePayload {
-  password: string
+  userId: ObjectId
+}
+
+export type GetUserByIdPayload = Pick<IUser, 'id'>
+
+export type GetAllUsersPayload = {
+  limit: number
+  page: number
 }
