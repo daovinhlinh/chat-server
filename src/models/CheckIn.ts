@@ -7,6 +7,10 @@ const schema = new Schema<ICheckIn, CheckInModel, Document>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true
+    },
+    coins: {
+      type: Schema.Types.Number,
+      required: true
     }
   },
   { timestamps: true }

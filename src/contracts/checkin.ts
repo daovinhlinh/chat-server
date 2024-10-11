@@ -4,6 +4,7 @@ import { CheckIn } from '~/models/CheckIn'
 export interface ICheckIn {
   id: ObjectId
   user: ObjectId
+  coins: number
   createdAt: Date
 }
 
