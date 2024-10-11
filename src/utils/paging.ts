@@ -9,6 +9,7 @@ interface PaginateResult<T> {
   docs: T[]
   page: number
   totalPages: number
+  totalDocs: number
 }
 
 export const paginate = async <T>(
@@ -26,5 +27,5 @@ export const paginate = async <T>(
 
   const totalPages = Math.ceil(total / limit)
 
-  return { docs, page: Number(page), totalPages }
+  return { docs, page: Number(page), totalPages, totalDocs: total }
 }
