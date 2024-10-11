@@ -163,10 +163,13 @@ const getAllUsers = async (
   res: Response
 ) => {
   try {
-    const { users, totalPages } = await userService.getAll(page, limit)
+    const { users, totalPages, totalDocs } = await userService.getAll(
+      page,
+      limit
+    )
 
     return res.status(StatusCodes.OK).json({
-      data: { users, page, totalPages },
+      data: { users, page, totalPages, totalDocs },
       message: ReasonPhrases.OK,
       status: StatusCodes.OK
     })
@@ -210,11 +213,42 @@ const getUserById = async (
   }
 }
 
+const searchByUsername = async (
+  { query: { username } }: IQueryRequest<{ username: string }>,
+  res: Response
+) => {
+  try {
+    const data = await userService.searchByUsername(username)
+
+    console.log(data)
+
+    return res.status(StatusCodes.OK).json({
+      data: {
+        users: data.docs,
+        page: data.page,
+        totalPages: data.totalPages,
+        totalDocs: data.totalDocs
+      },
+      message: ReasonPhrases.OK,
+      status: StatusCodes.OK
+    })
+  } catch (error) {
+    winston.error(error)
+    console.log('error', error)
+
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: ReasonPhrases.BAD_REQUEST,
+      status: StatusCodes.BAD_REQUEST
+    })
+  }
+}
+
 export const userController = {
   me,
   updateProfile,
   deleteProfile,
   updatePassword,
   getAllUsers,
-  getUserById
+  getUserById,
+  searchByUsername
 }

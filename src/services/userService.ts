@@ -1,6 +1,7 @@
 import { ClientSession, ObjectId } from 'mongoose'
-import { UpdateProfilePayload } from '~/contracts/user'
+import { IUser, UpdateProfilePayload } from '~/contracts/user'
 import { User } from '~/models/User'
+import { paginate } from '~/utils/paging'
 
 const getAll = async (page: number = 1, limit: number = 20) => {
   const skip = (page - 1) * limit
@@ -13,6 +14,7 @@ const getAll = async (page: number = 1, limit: number = 20) => {
     .limit(limit)
 
   return {
+    totalDocs: totalDocuments,
     totalPages,
     users
   }
@@ -102,6 +104,18 @@ const updatePasswordByUserId = (
   return User.updateOne(...params)
 }
 
+const searchByUsername = (
+  username: string,
+  page: number = 1,
+  limit: number = 25
+) => {
+  return paginate<IUser>(
+    User,
+    { username: { $regex: username, $options: 'i' } },
+    { page, limit }
+  )
+}
+
 export const userService = {
   getAll,
   create,
@@ -110,5 +124,6 @@ export const userService = {
   isExistByUsername,
   updateProfileByUserId,
   updatePasswordByUserId,
-  deleteById
+  deleteById,
+  searchByUsername
 }

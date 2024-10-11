@@ -12,8 +12,8 @@ const createRoll = (user: ObjectId, result: boolean, coins: number) => {
 }
 
 // Add Check-in
-const checkIn = (user: ObjectId, session?: ClientSession) => {
-  return new CheckIn({ user }).save({ session })
+const checkIn = (user: ObjectId, coins: number, session?: ClientSession) => {
+  return new CheckIn({ user, coins }).save({ session })
 }
 
 // Check if user has checked in today
@@ -78,6 +78,26 @@ const updateCoin = async (
     throw new Error('User not found')
   }
 
+  if (coins < 0) {
+    throw new Error('Insufficient coins')
+  }
+
+  return await User.findByIdAndUpdate(userId, { coins }, { new: true, session })
+}
+
+// Update user's coin
+const addCoin = async (
+  userId: ObjectId,
+  coins: number,
+  session?: ClientSession
+) => {
+  // Block if user has insufficient coins
+  const currentCoins = await User.findById(userId).select('coins')
+
+  if (!currentCoins) {
+    throw new Error('User not found')
+  }
+
   if (currentCoins.coins + coins < 0) {
     throw new Error('Insufficient coins')
   }
@@ -103,5 +123,6 @@ export const gameService = {
   isCheckInToday,
   getCheckInHistory,
   updateCoin,
-  getCoinsRanking
+  getCoinsRanking,
+  addCoin
 }

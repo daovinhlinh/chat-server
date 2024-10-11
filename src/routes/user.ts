@@ -32,6 +32,9 @@ export const user = (router: Router): void => {
   // Get all users
   router.get('/user/all', authGuard.isAdmin, userController.getAllUsers)
 
+  // Search user by username
+  router.get('/user/search', authGuard.isAdmin, userController.searchByUsername)
+
   // Get user by id
   router.get('/user/:id', authGuard.isAdmin, userController.getUserById)
 
