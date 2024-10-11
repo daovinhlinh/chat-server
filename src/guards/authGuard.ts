@@ -72,6 +72,13 @@ export const authGuard = {
     res: Response,
     next: NextFunction
   ) => {
+    if (!user) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        message: ReasonPhrases.UNAUTHORIZED,
+        status: StatusCodes.UNAUTHORIZED
+      })
+    }
+
     if (user.role === 'admin') {
       return next()
     }
