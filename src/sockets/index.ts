@@ -1,4 +1,4 @@
-import { DefaultEventsMap, Server, Event } from 'socket.io'
+import { DefaultEventsMap, Server, Event, Socket } from 'socket.io'
 import jwt from 'jsonwebtoken'
 import chatSocket from './chatSocket'
 import { jwtVerify } from '~/utils/jwt'
@@ -31,6 +31,7 @@ export const initializeSockets = (
   })
 
   io.on('connection', async socket => {
+    socket.removeAllListeners()
     try {
       console.log(socket.data.user)
 
@@ -39,8 +40,6 @@ export const initializeSockets = (
       socket.join('publicChannel')
       // socket.join('notification')
 
-      chatSocket(io)
-      gameSocket(io)
       // const token =
       //   socket.handshake.auth.token || socket.handshake.headers?.token
       // try {
@@ -56,12 +55,14 @@ export const initializeSockets = (
       //     }
       //   }
       // } catch (error) {}
-
       socket.on('disconnect', async () => {
-        console.log('User disconnected:', socket.data.user)
+        socket.removeAllListeners()
       })
     } catch (error) {
       console.log(error)
     }
   })
+
+  chatSocket(io)
+  gameSocket(io)
 }
