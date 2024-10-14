@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
+import { redis } from '~/config/redis'
 import { userService } from '~/services/userService'
 
 import { getAccessTokenFromHeaders } from '~/utils/headers'
@@ -14,16 +15,18 @@ export const authMiddleware = async (
     Object.assign(req, { context: {} })
 
     const { accessToken } = getAccessTokenFromHeaders(req.headers)
-
     if (!accessToken) return next()
 
-    const { id } = jwtVerify({ accessToken })
+    const { id } = jwtVerify(accessToken, process.env.JWT_SECRET_KEY)
+    console.log(id)
     if (!id) return next()
 
-    // const isAccessTokenExpired = await redis.client.get(
-    //   `expiredToken:${accessToken}`
-    // )
-    // if (isAccessTokenExpired) return next()
+    const isAccessTokenExpired = await redis.client.get(
+      `expiredToken:${accessToken}`
+    )
+    console.log('isAccessTokenExpired', isAccessTokenExpired)
+
+    if (isAccessTokenExpired) return next()
 
     const user = await userService.getById(id)
     if (!user) return next()

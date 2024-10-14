@@ -48,6 +48,17 @@ const addSpecialDay = async (date: Date, coins: number) => {
     { new: true }
   )
 
+  if (checkin) {
+    // Find the newly added special day in the updated document
+    const newSpecialDay = checkin.specialDays.find(
+      specialDay =>
+        specialDay.date.getTime() === date.getTime() &&
+        specialDay.coins === coins
+    )
+
+    return newSpecialDay
+  }
+
   return checkin
 }
 

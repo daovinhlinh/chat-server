@@ -7,6 +7,15 @@ export type SignUpPayload = Pick<
   'username' | 'password' | 'firstName' | 'lastName' | 'role'
 >
 
+export type SignOutPayload = {
+  refreshToken: string
+}
+
 export type ResetPasswordPayload = Pick<IUser, 'email'>
 
 export type NewPasswordPayload = Pick<IUser, 'password'>
+
+export type VerifyOtpPayload = {
+  username: string
+  otp: string
+}

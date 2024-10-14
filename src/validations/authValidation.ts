@@ -3,8 +3,9 @@ import validator from 'validator'
 import { StatusCodes, ReasonPhrases } from 'http-status-codes'
 import winston from 'winston'
 
-import { SignInPayload, SignUpPayload } from '~/contracts/auth'
+import { SignInPayload, SignOutPayload, SignUpPayload } from '~/contracts/auth'
 import { IBodyRequest } from '~/contracts/request'
+import { CustomReasonPhrases } from '~/constants'
 
 export const authValidation = {
   signIn: (
@@ -110,6 +111,52 @@ export const authValidation = {
 
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: ReasonPhrases.BAD_REQUEST,
+        status: StatusCodes.BAD_REQUEST
+      })
+    }
+  },
+
+  signOut: (
+    req: IBodyRequest<SignOutPayload>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      // Check if username and password are provided
+      if (!req.body.refreshToken) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          message: CustomReasonPhrases.REFRESH_TOKEN_MISSING,
+          status: StatusCodes.BAD_REQUEST
+        })
+      }
+
+      next()
+    } catch (error) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: error,
+        status: StatusCodes.BAD_REQUEST
+      })
+    }
+  },
+
+  refresh: (
+    req: IBodyRequest<SignOutPayload>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      // Check if username and password are provided
+      if (!req.body.refreshToken) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          message: CustomReasonPhrases.REFRESH_TOKEN_MISSING,
+          status: StatusCodes.BAD_REQUEST
+        })
+      }
+
+      next()
+    } catch (error) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: error,
         status: StatusCodes.BAD_REQUEST
       })
     }

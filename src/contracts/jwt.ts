@@ -2,8 +2,10 @@ import { ObjectId } from 'mongoose'
 
 export interface IJwtUser {
   id: ObjectId
+  iat: number
+  exp: number
 }
 
-export interface IAccessToken {
-  accessToken: string
+export interface IToken {
+  token: string
 }

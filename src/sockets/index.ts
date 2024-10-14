@@ -18,7 +18,7 @@ export const initializeSockets = (
       return next(new Error('Authentication token missing'))
     }
     try {
-      const user = jwtVerify({ accessToken: token })
+      const user = jwtVerify(token, process.env.JWT_SECRET_KEY)
       if (user && user.id) {
         Object.assign(socket.data, { user })
         next()

@@ -19,6 +19,11 @@ export declare global {
       JWT_SECRET_KEY: string
       JWT_REFRESH_SECRET_KEY: string
       APP_PORT: number
+      REDIS_HOST: string
+      REDIS_PORT: number
+      REDIS_PASSWORD: string
+      JWT_ACCESS_TOKEN_EXPIRATION: string
+      JWT_REFRESH_TOKEN_EXPIRATION: string
       // JWT_SECRET: string
       // JWT_EXPIRATION: string
       // MAIL_HOST: string

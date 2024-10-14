@@ -44,22 +44,5 @@ export const mongooseDb = {
     } catch (error) {
       console.error('MongoDB connection error:', error)
     }
-    // .then((db) => {
-    //   console.log('Connected to MongoDB at', host)
-    //   return db
-    // })
-    // .catch((error) => {
-    //   console.error('MongoDB connection error:', error)
-    // })
   }
 }
-
-// const pool = mysql2.createPool({
-//   connectionLimit: 10,
-//   host: host,
-//   user: username,
-//   password: password,
-//   database: database
-// })
-
-// export default connectDB

@@ -1,7 +1,10 @@
 import { Router } from 'express'
+import { mailOptions, mailService } from '~/config/mail'
 import { authController } from '~/controllers'
 import { authGuard } from '~/guards'
 import { authValidation } from '~/validations/authValidation'
+import otpGenerator from 'otp-generator'
+import { rateLimitMiddleware } from '~/middlewares/rateLimitMiddleware'
 
 export const auth = (router: Router): void => {
   router.post(
@@ -18,7 +21,44 @@ export const auth = (router: Router): void => {
     authController.signUp
   )
 
-  // router.get('/auth/sign-out', authGuard.isAuth, authController.signOut)
+  // router.post('/auth/testMail', authGuard.isGuest, () => {
+  //   const otp = otpGenerator.generate(6, {
+  //     lowerCaseAlphabets: false,
+  //     upperCaseAlphabets: false,
+  //     specialChars: false
+  //   })
+
+  //   mailService.sendMail(
+  //     mailOptions(`This is OTP for: ${otp}`),
+  //     (error, info) => {
+  //       if (error) {
+  //         console.error('Error sending email: ', error)
+  //       } else {
+  //         console.log('Email sent: ', info.response)
+  //       }
+  //     }
+  //   )
+  // })
+
+  router.post(
+    '/auth/verifyOtp',
+    authGuard.isGuest,
+    rateLimitMiddleware,
+    authController.verifyOtp
+  )
+
+  router.post(
+    '/auth/sign-out',
+    authGuard.isAuth,
+    authValidation.signOut,
+    authController.signOut
+  )
+
+  router.post(
+    '/auth/refreshToken',
+    authValidation.refresh,
+    authController.refresh
+  )
 
   // router.post(
   //   '/auth/password/reset',
