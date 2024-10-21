@@ -16,7 +16,7 @@ export const checkin = (router: Router): void => {
 
   router.get(
     '/checkin/getConfig',
-    authGuard.isAdmin,
+    authGuard.isAuth,
     checkinController.getCheckInConfig
   )
 
