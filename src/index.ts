@@ -5,6 +5,7 @@ import path from 'path'
 import socketio from 'socket.io'
 import { mongooseDb } from './config/db'
 import { redis } from './config/redis'
+import { ExtendedServer } from './crons/taixiu'
 import './infrastructure/logger'
 import {
   authMiddleware,
@@ -13,8 +14,8 @@ import {
 } from './middlewares'
 import { router } from './routes'
 import { initializeSockets } from './sockets/index'
+import { initializeSocketServer } from './socketServer'
 
-import { createClient } from 'redis'
 mongooseDb.run()
 
 redis.client.on('connect', () => console.log('Connected to Redis'))
@@ -34,11 +35,7 @@ redis.run()
 const app = express()
 
 const server = http.createServer(app)
-const io = new socketio.Server(server, {
-  cors: {
-    origin: '*'
-  }
-})
+const io = initializeSocketServer(server)
 initializeSockets(io)
 
 // Middleware

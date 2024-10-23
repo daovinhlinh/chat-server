@@ -1,4 +1,6 @@
 import { Server, Socket } from 'socket.io'
+import { ITaiXiuSocketData } from '~/contracts/taixiu'
+import { taixiuController } from '~/controllers/taixiuController'
 
 export default function gameSocket(io: Server) {
   console.log('Game socket initialized')
@@ -13,6 +15,12 @@ export default function gameSocket(io: Server) {
         })
       } catch (error) {
         console.log(error)
+      }
+    })
+
+    socket.on('taixiu', (data: ITaiXiuSocketData) => {
+      if (data.cuoc) {
+        taixiuController.cuoc(socket, data.cuoc)
       }
     })
   })

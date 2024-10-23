@@ -6,10 +6,27 @@ import { ISocketData, ISocketUser } from '~/contracts/socket'
 import gameSocket from './gameSocket'
 import { userController } from '~/controllers'
 import { userService } from '~/services'
+import {
+  ExtendedServer,
+  init as initTaixiu,
+  ServerToClientEvents
+} from '~/crons/taixiu'
 
-export const initializeSockets = (
-  io: Server<DefaultEventsMap, Event, DefaultEventsMap, ISocketData>
-) => {
+export interface ExtendedSocket
+  extends Socket<
+    DefaultEventsMap,
+    ServerToClientEvents,
+    DefaultEventsMap,
+    ISocketData
+  > {
+  sendToTxUser?: (data: any) => void
+}
+
+export const initializeSockets = (io: ExtendedServer) => {
+  io.sendToTxUser = (data: any) => {
+    // if (!io) return
+    io.emit('taixiu', data)
+  }
   io.use((socket, next) => {
     const token = socket.handshake.auth.token || socket.handshake.headers?.token
 
@@ -30,7 +47,7 @@ export const initializeSockets = (
     }
   })
 
-  io.on('connection', async socket => {
+  io.on('connection', async (socket: ExtendedSocket) => {
     socket.removeAllListeners()
     try {
       console.log(socket.data.user)
@@ -55,6 +72,12 @@ export const initializeSockets = (
       //     }
       //   }
       // } catch (error) {}
+
+      socket.sendToTxUser = (data: any) => {
+        if (!io) return
+        socket.emit('taixiu', data)
+      }
+
       socket.on('disconnect', async () => {
         socket.removeAllListeners()
       })
@@ -62,7 +85,10 @@ export const initializeSockets = (
       console.log(error)
     }
   })
+  initTaixiu()
 
   chatSocket(io)
   gameSocket(io)
+
+  // taixiu
 }

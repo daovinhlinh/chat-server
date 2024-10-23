@@ -10,6 +10,11 @@ export interface IUser {
   phoneNumber?: string
   role: 'user' | 'admin'
   coins: number
+  coinsWin: number
+  coinsLose: number
+  total: number
+  coinsPlayed: number
+  nohu: number
   verified: boolean
   createdAt: Date
 }

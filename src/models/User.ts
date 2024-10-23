@@ -25,6 +25,33 @@ const schema = new Schema<IUser, UserModel, IUserMethods>(
     },
     phoneNumber: { type: String },
     coins: {
+      //Tổng tiền
+      type: Number,
+      default: 0
+    },
+    coinsWin: {
+      //Tổng tiền thắng
+      type: Number,
+      default: 0
+    },
+    coinsLose: {
+      //Tổng tiền thua
+      type: Number,
+      default: 0
+    },
+    total: {
+      //Thắng trừ thua
+      type: Number,
+      default: 0,
+      index: true
+    },
+    coinsPlayed: {
+      //Tổng tiền đã chơi
+      type: Number,
+      default: 0
+    },
+    nohu: {
+      //Tổng số lần nổ hũ
       type: Number,
       default: 0
     },

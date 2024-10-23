@@ -1,5 +1,6 @@
 import { ClientSession, ObjectId } from 'mongoose'
 import { IUser, UpdateProfilePayload } from '~/contracts/user'
+import { TaiXiuUser } from '~/models/TaiXiu_user'
 import { User } from '~/models/User'
 import { paginate } from '~/utils/paging'
 
@@ -59,6 +60,11 @@ const create = async (
     console.log('create error', error)
   }
 }
+
+const createTaiXiuUser = (uid: string) => {
+  return new TaiXiuUser({ uid }).save()
+}
+
 const isExistByUsername = (username: string) => User.exists({ username })
 
 const updateProfileByUserId = (
@@ -119,6 +125,7 @@ const searchByUsername = (
 export const userService = {
   getAll,
   create,
+  createTaiXiuUser,
   getById,
   getByUsername,
   isExistByUsername,

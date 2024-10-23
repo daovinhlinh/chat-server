@@ -155,6 +155,8 @@ const signUp = async (
         status: StatusCodes.BAD_REQUEST
       })
     }
+
+    await userService.createTaiXiuUser(user.id.toString())
     // Send otp to phone
     // const otp = otpGenerator.generate(6, {
     //   lowerCaseAlphabets: false,
