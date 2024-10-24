@@ -1,4 +1,5 @@
 import { IJwtUser } from './jwt'
+import { ITaiXiuData } from './taixiu'
 
 export interface ISocketUser {
   id: string
@@ -14,6 +15,21 @@ export interface ISocketUser {
   exp: number
 }
 
+export interface ITaiXiuLogData {
+  taixiu: ITaiXiuData
+  logs: {
+    dice: number[]
+    phien: number
+  }[]
+  du_day: Partial<{
+    tLineWinCoin: number
+    tLineLostCoin: number
+    tLineWinCoinH: number
+    tLineLostCoinH: number
+  }>
+}
+
 export interface ISocketData {
   user: IJwtUser
+  taixiu: ITaiXiuLogData
 }

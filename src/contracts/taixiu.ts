@@ -37,6 +37,7 @@ export interface ITaiXiuPhien {
 }
 
 export interface ITaiXiuUser {
+  _id: string
   uid: string
   tCoinPlay: number
   tWinCoin: number
@@ -124,6 +125,12 @@ export interface ITopUser {
 
 export interface ITaiXiuSocketData {
   cuoc: ITaiXiuCuocPayload
+  getLogs: boolean
+  getHistory: ITaiXiuGetHistoryPayload
+}
+
+export interface ITaiXiuGetHistoryPayload {
+  page: number
 }
 
 export interface ITaiXiuCuocPayload {

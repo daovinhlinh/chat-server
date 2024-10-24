@@ -50,8 +50,6 @@ export const initializeSockets = (io: ExtendedServer) => {
   io.on('connection', async (socket: ExtendedSocket) => {
     socket.removeAllListeners()
     try {
-      console.log(socket.data.user)
-
       const { id } = socket.data.user
       socket.join(id as unknown as string)
       socket.join('publicChannel')
@@ -73,10 +71,28 @@ export const initializeSockets = (io: ExtendedServer) => {
       //   }
       // } catch (error) {}
 
+      socket.data.taixiu = {
+        taixiu: {
+          coin_tai: 0,
+          coin_xiu: 0,
+          player_tai: 0,
+          player_xiu: 0,
+          phien: 0
+        },
+        logs: [],
+        du_day: {}
+      }
+
       socket.sendToTxUser = (data: any) => {
         if (!io) return
         socket.emit('taixiu', data)
       }
+
+      socket.sendToTxUser({
+        taixiu: {
+          time_remain: io.TaiXiu_time
+        }
+      })
 
       socket.on('disconnect', async () => {
         socket.removeAllListeners()

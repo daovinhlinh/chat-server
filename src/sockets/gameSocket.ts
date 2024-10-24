@@ -22,6 +22,14 @@ export default function gameSocket(io: Server) {
       if (data.cuoc) {
         taixiuController.cuoc(socket, data.cuoc)
       }
+
+      if (data.getLogs) {
+        taixiuController.getLogs(socket)
+      }
+
+      if (data.getHistory) {
+        taixiuController.getHistory(socket, data.getHistory)
+      }
     })
   })
 }
