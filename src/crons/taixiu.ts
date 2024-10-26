@@ -191,10 +191,14 @@ const thongtin_thanhtoan = async (
         var getphiennohu = last.phiennohu + 1
       }
       let hutaix = dataHu?.hutx
-      let TaiXiu_red_tong_tai: number | null = 0
-      let TaiXiu_red_tong_xiu: number | null = 0
-      let TaiXiu_tonguser_tai = 0
-      let TaiXiu_tonguser_xiu = 0
+
+      // Tổng cược tài/xỉu
+      let tong_coin_tai: number | null = 0
+      let tong_coin_xiu: number | null = 0
+
+      // Tổng số người chơi tài/xỉu
+      let tong_user_tai = 0
+      let tong_user_xiu = 0
       let getphien = 0
 
       // let vipConfig = Helpers.getConfig('topVip')
@@ -208,49 +212,41 @@ const thongtin_thanhtoan = async (
         list.forEach(objL => {
           if (objL.select === true) {
             // Tổng Red Tài
-            TaiXiu_red_tong_tai = (TaiXiu_red_tong_tai ?? 0) + objL.bet
-            TaiXiu_tonguser_tai += objL.phien
-            getphien = objL.phien
+            tong_coin_tai = (tong_coin_tai ?? 0) + objL.bet
+            tong_user_tai += objL.phien
           } else if (objL.select === false) {
             // Tổng Red Xỉu
-            TaiXiu_red_tong_xiu = (TaiXiu_red_tong_xiu ?? 0) + objL.bet
-            TaiXiu_tonguser_xiu += objL.phien
-            getphien = objL.phien
+            tong_coin_xiu = (tong_coin_xiu ?? 0) + objL.bet
+            tong_user_xiu += objL.phien
           }
+          getphien = objL.phien
         })
-        let user_select_tai = TaiXiu_tonguser_tai / getphien
+        let user_select_tai = tong_user_tai / getphien
         let user_dat_tai = user_select_tai % 10
-        let user_select_xiu = TaiXiu_tonguser_xiu / getphien
+        let user_select_xiu = tong_user_xiu / getphien
         let user_chon_xiu = user_select_xiu % 10
 
         // Tổng Coin chênh lệch
-        let TaiXiu_tong_red_lech: number | null = Math.abs(
-          TaiXiu_red_tong_tai - TaiXiu_red_tong_xiu
+        let tong_coin_chenh: number | null = Math.abs(
+          tong_coin_tai - tong_coin_xiu
         )
-        let TaiXiu_red_lech_tai: boolean | null =
-          TaiXiu_red_tong_tai > TaiXiu_red_tong_xiu ? true : false
-        let lettongtai = 0
-        if (TaiXiu_red_tong_tai > TaiXiu_red_tong_xiu) {
-          lettongtai = TaiXiu_red_tong_xiu
-        } else {
-          lettongtai = TaiXiu_red_tong_tai
-        }
-        TaiXiu_red_tong_tai = null
-        TaiXiu_red_tong_xiu = null
+
+        let coin_lech_tai: boolean | null =
+          tong_coin_tai > tong_coin_xiu ? true : false
+
+        let lettongtai = coin_lech_tai ? tong_coin_xiu : tong_coin_tai
+
+        tong_coin_tai = null
+        tong_coin_xiu = null
 
         Promise.all(
-          list.map(function (obj) {
+          list.map(obj => {
             if (obj.select === true) {
               // Tổng Red Tài
               let win = (dice as number) > 10 ? true : false
-              if (
-                TaiXiu_red_lech_tai &&
-                TaiXiu_tong_red_lech &&
-                TaiXiu_tong_red_lech > 0
-              ) {
-                if (TaiXiu_tong_red_lech >= obj.bet) {
-                  // Trả lại hoàn toàn
-                  TaiXiu_tong_red_lech -= obj.bet
+              if (coin_lech_tai && tong_coin_chenh && tong_coin_chenh > 0) {
+                if (tong_coin_chenh >= obj.bet) {
+                  tong_coin_chenh -= obj.bet
                   // trả lại hoàn toàn
                   obj.thanhtoan = true
                   obj.win = win
@@ -269,19 +265,20 @@ const thongtin_thanhtoan = async (
                       $inc: { tralai: obj.bet, tienhienco: obj.bet }
                     }
                   ).exec()
+
                   return TaiXiuOne.updateOne(
                     { uid: obj.uid, phien: game_id },
                     { $set: { win: win }, $inc: { tralai: obj.bet } }
                   ).exec()
                 } else {
                   // Trả lại 1 phần
-                  let betPlay = obj.bet - TaiXiu_tong_red_lech //1000
+                  let betPlay = obj.bet - tong_coin_chenh //1000
                   let betwinP = 0
 
                   obj.thanhtoan = true
                   obj.win = win
-                  obj.tralai = TaiXiu_tong_red_lech
-                  TaiXiu_tong_red_lech = 0
+                  obj.tralai = tong_coin_chenh
+                  tong_coin_chenh = 0
 
                   // Helpers.MissionAddCurrent(
                   //   obj.uid,
@@ -588,14 +585,10 @@ const thongtin_thanhtoan = async (
             } else if (obj.select === false) {
               // Tổng Red Xỉu
               let win = (dice as number) > 10 ? false : true
-              if (
-                TaiXiu_red_lech_tai &&
-                TaiXiu_tong_red_lech &&
-                TaiXiu_tong_red_lech > 0
-              ) {
-                if (TaiXiu_tong_red_lech >= obj.bet) {
+              if (coin_lech_tai && tong_coin_chenh && tong_coin_chenh > 0) {
+                if (tong_coin_chenh >= obj.bet) {
                   // Trả lại hoàn toàn
-                  TaiXiu_tong_red_lech -= obj.bet
+                  tong_coin_chenh -= obj.bet
                   // trả lại hoàn toàn
                   obj.thanhtoan = true
                   obj.win = win
@@ -621,13 +614,13 @@ const thongtin_thanhtoan = async (
                   ).exec()
                 } else {
                   // Trả lại 1 phần
-                  let betPlay = obj.bet - TaiXiu_tong_red_lech
+                  let betPlay = obj.bet - tong_coin_chenh
                   let betwinP = 0
 
                   obj.thanhtoan = true
                   obj.win = win
-                  obj.tralai = TaiXiu_tong_red_lech
-                  TaiXiu_tong_red_lech = 0
+                  obj.tralai = tong_coin_chenh
+                  tong_coin_chenh = 0
                   // Helpers.MissionAddCurrent(
                   //   obj.uid,
                   //   (betPlay * 0.02) >> 0
@@ -676,13 +669,13 @@ const thongtin_thanhtoan = async (
                     }
                     const addquyhu = betwinP * 0.003
                     obj.betwin = betwinP
-                    let redUpdate = obj.bet + betwinP + addnohu
+                    let coinUpdate = obj.bet + betwinP + addnohu
                     User.updateOne(
                       { _id: obj.uid },
                       {
                         $inc: {
                           total: betwinP,
-                          coins: redUpdate,
+                          coins: coinUpdate,
                           coinsPlayed: betPlay,
                           coinsWin: betwinP
                         }
@@ -696,7 +689,7 @@ const thongtin_thanhtoan = async (
                         $inc: {
                           tralai: obj.tralai,
                           lswin: betwinP,
-                          tienhienco: redUpdate
+                          tienhienco: coinUpdate
                         }
                       }
                     ).exec()
@@ -928,8 +921,8 @@ const thongtin_thanhtoan = async (
           playGame()
           setTaiXiu_user(game_id)
           //get_newtop(game_id, dice);
-          TaiXiu_tong_red_lech = null
-          TaiXiu_red_lech_tai = null
+          tong_coin_chenh = null
+          coin_lech_tai = null
           // vipConfig = null
         })
       } else if (dice) {
@@ -991,7 +984,7 @@ const thongtin_thanhtoan = async (
 
 const playGame = () => {
   if (!io) return
-  io.TaiXiu_time = 13
+  io.TaiXiu_time = 72
   gameLoop = setInterval(async () => {
     if (!io) return
     if (!(io.TaiXiu_time % 5)) {
