@@ -11,6 +11,8 @@ import {
   IContextRequest,
   IUserRequest
 } from '~/contracts/request'
+import { ITopUser } from '~/contracts/taixiu'
+import { User } from '~/models/User'
 import { userService } from '~/services'
 import { gameService } from '~/services/gameService'
 import { convertStringToDate } from '~/utils/dates'
@@ -80,9 +82,28 @@ const rollDice = ({ body }: IBodyRequest<RollDicePayload>) => {
 // Get ranking by coins
 const getRanking = async (_: IContextRequest<IUserRequest>, res: Response) => {
   try {
-    const rank = await gameService.getCoinsRanking()
+    const list = await gameService.getCoinsRanking()
+    if (!list) {
+      return res.status(StatusCodes.OK).json({
+        data: [],
+        message: ReasonPhrases.OK,
+        status: StatusCodes.OK
+      })
+    }
+
+    const topUsers: ITopUser[] = await Promise.all(
+      list.map(async obj => {
+        const result2 = await User.findOne({ id: obj.uid }).exec()
+        return {
+          name: result2 ? result2.username : '',
+          bet: obj.total
+          // type: result2 ? result2.type : false
+        }
+      })
+    )
+
     return res.status(StatusCodes.OK).json({
-      data: rank,
+      data: topUsers,
       message: ReasonPhrases.OK,
       status: StatusCodes.OK
     })

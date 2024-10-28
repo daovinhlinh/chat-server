@@ -3,6 +3,7 @@ import { ClientSession, ObjectId } from 'mongoose'
 import { ICheckIn } from '~/contracts/checkin'
 import { CheckIn } from '~/models/CheckIn'
 import RollDice from '~/models/RollDice'
+import { TaiXiuUser } from '~/models/TaiXiu_user'
 import { User } from '~/models/User'
 import { paginate } from '~/utils/paging'
 import { userService } from './userService'
@@ -111,10 +112,20 @@ const addCoin = async (
 
 // Get user ranking base on coins
 const getCoinsRanking = async (limit: number = 10) => {
-  return await User.find({ role: 'user' })
-    .sort({ coins: -1 })
-    .limit(limit)
-    .select('username email coins')
+  // return await User.find({ role: 'user' })
+  //   .sort({ coins: -1 })
+  //   .limit(limit)
+  //   .select('username email coins')
+
+  try {
+    const results = await TaiXiuUser.find({ total: { $gt: 0 } }, 'total uid', {
+      sort: { total: -1 },
+      limit
+    }).exec()
+    return results
+  } catch (err) {
+    console.error('Error in GetTop:', err)
+  }
 }
 
 export const gameService = {

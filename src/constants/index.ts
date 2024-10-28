@@ -29,5 +29,7 @@ export const CustomReasonPhrases = {
   USER_NOT_FOUND: 'User not found',
   WRONG_OTP: 'Wrong OTP',
   ACCOUNT_NOT_VERIFIED: 'Account not verified',
-  REFRESH_TOKEN_MISSING: 'Refresh token missing'
+  REFRESH_TOKEN_MISSING: 'Refresh token missing',
+  EMAIL_INVALID: 'Email invalid',
+  PHONE_NUMBER_INVALID: 'Phone number invalid'
 }

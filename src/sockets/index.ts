@@ -22,6 +22,8 @@ export interface ExtendedSocket
   sendToTxUser?: (data: any) => void
 }
 
+const userSocketMap = new Map<string, Socket>()
+
 export const initializeSockets = (io: ExtendedServer) => {
   io.sendToTxUser = (data: any) => {
     // if (!io) return
@@ -51,6 +53,14 @@ export const initializeSockets = (io: ExtendedServer) => {
     socket.removeAllListeners()
     try {
       const { id } = socket.data.user
+
+      // Check if the user already has a connected socket
+      if (userSocketMap.has(id.toString())) {
+        userSocketMap.get(id.toString())?.disconnect(true)
+      }
+
+      userSocketMap.set(id.toString(), socket)
+
       socket.join(id as unknown as string)
       socket.join('publicChannel')
       // socket.join('notification')
@@ -96,6 +106,7 @@ export const initializeSockets = (io: ExtendedServer) => {
 
       socket.on('disconnect', async () => {
         socket.removeAllListeners()
+        userSocketMap.delete(id.toString())
       })
     } catch (error) {
       console.log(error)

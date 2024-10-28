@@ -42,14 +42,12 @@ const me = async (
 const updateProfile = async (
   {
     context: { user },
-    body: { firstName, lastName, email, phoneNumber }
+    body: { email, phoneNumber }
   }: ICombinedRequest<IUserRequest, UpdateProfilePayload>,
   res: Response
 ) => {
   try {
     const updatedProfile = await userService.updateProfileByUserId(user.id, {
-      firstName,
-      lastName,
       email,
       phoneNumber
     })

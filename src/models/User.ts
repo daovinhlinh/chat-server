@@ -15,14 +15,6 @@ const schema = new Schema<IUser, UserModel, IUserMethods>(
       type: String,
       required: true
     },
-    firstName: {
-      type: String,
-      required: true
-    },
-    lastName: {
-      type: String,
-      required: true
-    },
     phoneNumber: { type: String },
     coins: {
       //Tổng tiền

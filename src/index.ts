@@ -22,16 +22,6 @@ redis.client.on('connect', () => console.log('Connected to Redis'))
 
 redis.run()
 
-// const client = createClient({
-//   password: 'uVuQSBSuaVlaPN5rVNCRG1NY4exHGuKd',
-//   socket: {
-//     host: 'redis-18676.c292.ap-southeast-1-1.ec2.redns.redis-cloud.com',
-//     port: 18676
-//   }
-// })
-// client.on('connect', () => console.log('Connected to Redis'))
-// client.connect()
-
 const app = express()
 
 const server = http.createServer(app)

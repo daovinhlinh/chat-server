@@ -3,6 +3,7 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes'
 import { isValidObjectId } from 'mongoose'
 import validator from 'validator'
 import winston from 'winston'
+import { CustomReasonPhrases } from '~/constants'
 import { IBodyRequest } from '~/contracts/request'
 import {
   DeleteProfilePayload,
@@ -17,30 +18,42 @@ export const userValidation = {
     next: NextFunction
   ) => {
     try {
-      if (!req.body.firstName || !req.body.lastName) {
+      const { email, phoneNumber } = req.body
+
+      if (!email || !phoneNumber) {
         return res.status(StatusCodes.BAD_REQUEST).json({
           message: ReasonPhrases.BAD_REQUEST,
           status: StatusCodes.BAD_REQUEST
         })
       }
 
-      const trimemdFirstName = validator.trim(req.body.firstName)
-      const trimemdLastName = validator.trim(req.body.lastName)
+      // validate email
+      let normalizedEmail = email && validator.normalizeEmail(email)
+      if (normalizedEmail) {
+        normalizedEmail = validator.trim(normalizedEmail)
+      }
 
       if (
-        !validator.isLength(trimemdFirstName, { min: 2, max: 48 }) ||
-        !validator.isLength(trimemdLastName, { min: 2, max: 48 })
+        !normalizedEmail ||
+        !validator.isEmail(normalizedEmail, { allow_utf8_local_part: false })
       ) {
         return res.status(StatusCodes.BAD_REQUEST).json({
-          message: ReasonPhrases.BAD_REQUEST,
+          message: CustomReasonPhrases.EMAIL_INVALID,
           status: StatusCodes.BAD_REQUEST
         })
       }
 
-      Object.assign(req.body, {
-        firstName: trimemdFirstName,
-        lastName: trimemdLastName
-      })
+      Object.assign(req.body, { email: normalizedEmail })
+
+      // validate phone number
+      if (!validator.isMobilePhone(phoneNumber)) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          message: CustomReasonPhrases.PHONE_NUMBER_INVALID,
+          status: StatusCodes.BAD_REQUEST
+        })
+      }
+
+      Object.assign(req.body, { phoneNumber })
 
       return next()
     } catch (error) {

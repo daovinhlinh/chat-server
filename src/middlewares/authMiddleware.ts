@@ -18,13 +18,22 @@ export const authMiddleware = async (
     if (!accessToken) return next()
 
     const { id } = jwtVerify(accessToken, process.env.JWT_SECRET_KEY)
-    console.log(id)
+
     if (!id) return next()
+
+    try {
+      const storedToken = await redis.client.get(id.toString())
+      if (!storedToken || storedToken !== accessToken) {
+        return next()
+      }
+    } catch (err) {
+      console.error('Error checking stored token:', err)
+      return next()
+    }
 
     const isAccessTokenExpired = await redis.client.get(
       `expiredToken:${accessToken}`
     )
-    console.log('isAccessTokenExpired', isAccessTokenExpired)
 
     if (isAccessTokenExpired) return next()
 

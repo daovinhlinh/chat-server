@@ -17,7 +17,7 @@ import {
   IUserRequest
 } from '~/contracts/request'
 import { userService } from '~/services'
-import { jwtSign, jwtVerify } from '~/utils/jwt'
+import { jwtSign, jwtVerify, storeTokenInRedis } from '~/utils/jwt'
 import { createHash } from '~/utils/hash'
 import { createCryptoString } from '~/utils/cryptoString'
 import { createDateAddDaysFromNow } from '~/utils/dates'
@@ -99,6 +99,7 @@ const signIn = async (
       process.env.JWT_REFRESH_TOKEN_EXPIRATION
     )
     const user = userDoc.toJSON()
+    storeTokenInRedis(accessToken, userDoc.id.toString())
 
     return res.status(StatusCodes.OK).json({
       data: {
@@ -120,9 +121,7 @@ const signIn = async (
 }
 
 const signUp = async (
-  {
-    body: { username, password, firstName, lastName, role = 'user' }
-  }: IBodyRequest<SignUpPayload>,
+  { body: { username, password, role = 'user' } }: IBodyRequest<SignUpPayload>,
   res: Response
 ) => {
   const session = await startSession()
@@ -143,8 +142,6 @@ const signUp = async (
       {
         username,
         password: hashedPassword,
-        firstName,
-        lastName,
         role
       },
       session
@@ -290,7 +287,8 @@ const signOut = async (
       redis.client.set(`expiredToken:${refreshToken}`, `${user.id}`, {
         EX: refreshTokenLife, // time to delete key
         NX: true
-      })
+      }),
+      redis.client.del(user.id.toString())
     ])
 
     return res.status(StatusCodes.OK).json({
@@ -347,6 +345,8 @@ const refresh = async (
         process.env.JWT_REFRESH_TOKEN_EXPIRATION
       ).token
     }
+
+    storeTokenInRedis(accessToken, payload.id.toString())
 
     return res.status(StatusCodes.OK).json({
       data: {

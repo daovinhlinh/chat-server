@@ -2,10 +2,7 @@ import { IUser } from './user'
 
 export type SignInPayload = Pick<IUser, 'username' | 'password'>
 
-export type SignUpPayload = Pick<
-  IUser,
-  'username' | 'password' | 'firstName' | 'lastName' | 'role'
->
+export type SignUpPayload = Pick<IUser, 'username' | 'password' | 'role'>
 
 export type SignOutPayload = {
   refreshToken: string

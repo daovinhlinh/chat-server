@@ -5,8 +5,6 @@ export interface IUser {
   username: string
   email: string
   password: string
-  firstName: string
-  lastName: string
   phoneNumber?: string
   role: 'user' | 'admin'
   coins: number
@@ -26,7 +24,7 @@ export interface IUserMethods {
 export type UserModel = Model<IUser, unknown, IUserMethods>
 
 export type UpdateProfilePayload = Required<
-  Pick<IUser, 'firstName' | 'lastName' | 'email' | 'phoneNumber'>
+  Pick<IUser, 'email' | 'phoneNumber'>
 >
 
 export type UpdateEmailPayload = Pick<IUser, 'email' | 'password'>

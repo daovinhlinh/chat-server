@@ -67,13 +67,11 @@ export const authValidation = {
     next: NextFunction
   ) => {
     try {
-      const { username, password, firstName, lastName } = req.body
+      const { username, password } = req.body
 
       if (
         !username ||
         !password ||
-        !firstName ||
-        !lastName ||
         !validator.isLength(password, { min: 6, max: 48 })
       ) {
         return res.status(StatusCodes.BAD_REQUEST).json({

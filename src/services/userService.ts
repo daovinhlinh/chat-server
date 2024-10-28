@@ -33,14 +33,10 @@ const create = async (
   {
     username,
     password,
-    firstName,
-    lastName,
     role = 'user'
   }: {
     username: string
     password: string
-    firstName: string
-    lastName: string
     verified?: boolean
     role: 'user' | 'admin'
   },
@@ -50,8 +46,6 @@ const create = async (
     const user = new User({
       username,
       password,
-      firstName,
-      lastName,
       role
     })
     const saved = await user.save({ session })
@@ -69,14 +63,10 @@ const isExistByUsername = (username: string) => User.exists({ username })
 
 const updateProfileByUserId = (
   userId: ObjectId,
-  { firstName, lastName, email, phoneNumber }: UpdateProfilePayload,
+  { email, phoneNumber }: UpdateProfilePayload,
   session?: ClientSession
 ) => {
-  const data = [
-    { _id: userId },
-    { firstName, lastName, email, phoneNumber },
-    { new: true }
-  ]
+  const data = [{ _id: userId }, { email, phoneNumber }, { new: true }]
 
   let params = null
 
