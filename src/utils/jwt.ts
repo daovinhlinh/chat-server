@@ -3,7 +3,6 @@ import { ObjectId } from 'mongoose'
 import { redis } from '~/config/redis'
 
 import { IJwtUser, IToken } from '../contracts/jwt'
-console.log(process.env.JWT_SECRET_KEY)
 
 export const jwtSign = (
   id: ObjectId,
