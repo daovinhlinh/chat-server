@@ -252,7 +252,25 @@ const verifyOtp = (
         user.verified = true
         user.save()
 
+        const { token: accessToken } = jwtSign(
+          user.id,
+          process.env.JWT_SECRET_KEY,
+          process.env.JWT_ACCESS_TOKEN_EXPIRATION
+        )
+        const { token: refreshToken } = jwtSign(
+          user.id,
+          process.env.JWT_REFRESH_SECRET_KEY,
+          process.env.JWT_REFRESH_TOKEN_EXPIRATION
+        )
+        const userData = user.toJSON()
+        storeTokenInRedis(accessToken, user.id.toString())
+
         return res.status(StatusCodes.OK).json({
+          data: {
+            user: userData,
+            accessToken,
+            refreshToken
+          },
           message: ReasonPhrases.OK,
           status: StatusCodes.OK
         })
