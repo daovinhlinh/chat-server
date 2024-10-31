@@ -3,7 +3,13 @@ import validator from 'validator'
 import { StatusCodes, ReasonPhrases } from 'http-status-codes'
 import winston from 'winston'
 
-import { SignInPayload, SignOutPayload, SignUpPayload } from '~/contracts/auth'
+import {
+  ResendOtpPayload,
+  SignInPayload,
+  SignOutPayload,
+  SignUpPayload,
+  VerifyOtpPayload
+} from '~/contracts/auth'
 import { IBodyRequest } from '~/contracts/request'
 import { CustomReasonPhrases } from '~/constants'
 
@@ -158,6 +164,36 @@ export const authValidation = {
         status: StatusCodes.BAD_REQUEST
       })
     }
+  },
+
+  verifyOtp: (
+    req: IBodyRequest<VerifyOtpPayload>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    if (!req.body || !req.body.otp || !req.body.username) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: ReasonPhrases.BAD_REQUEST,
+        status: StatusCodes.BAD_REQUEST
+      })
+    }
+
+    next()
+  },
+
+  resendOtp: (
+    req: IBodyRequest<ResendOtpPayload>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    if (!req.body || !req.body.username) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: ReasonPhrases.BAD_REQUEST,
+        status: StatusCodes.BAD_REQUEST
+      })
+    }
+
+    next()
   }
 
   // resetPassword: (

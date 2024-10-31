@@ -16,3 +16,5 @@ export type VerifyOtpPayload = {
   username: string
   otp: string
 }
+
+export type ResendOtpPayload = Pick<IUser, 'username'>

@@ -27,8 +27,9 @@ export const CustomReasonPhrases = {
   ALREADY_CHECKED_IN: 'User already checked in',
   DAY_IS_EXISTED: 'Day is existed',
   USER_NOT_FOUND: 'User not found',
-  WRONG_OTP: 'Wrong OTP',
-  ACCOUNT_NOT_VERIFIED: 'Account not verified',
+  WRONG_OTP: 'WRONG_OTP',
+  ACCOUNT_NOT_VERIFIED: 'ACCOUNT_NOT_VERIFIED',
+  OTP_NOT_SENT: 'OTP_NOT_SENT',
   REFRESH_TOKEN_MISSING: 'Refresh token missing',
   EMAIL_INVALID: 'Email invalid',
   PHONE_NUMBER_INVALID: 'Phone number invalid'

@@ -4,7 +4,10 @@ import { authController } from '~/controllers'
 import { authGuard } from '~/guards'
 import { authValidation } from '~/validations/authValidation'
 import otpGenerator from 'otp-generator'
-import { rateLimitMiddleware } from '~/middlewares/rateLimitMiddleware'
+import {
+  rateLimitMiddleware,
+  resendOtpRateLimitMiddleware
+} from '~/middlewares/rateLimitMiddleware'
 
 export const auth = (router: Router): void => {
   router.post(
@@ -19,6 +22,22 @@ export const auth = (router: Router): void => {
     authGuard.isGuest,
     authValidation.signUp,
     authController.signUp
+  )
+
+  router.post(
+    '/auth/verifyOtp',
+    authGuard.isGuest,
+    rateLimitMiddleware,
+    authValidation.verifyOtp,
+    authController.verifyOtp
+  )
+
+  router.post(
+    '/auth/resendOtp',
+    authGuard.isGuest,
+    resendOtpRateLimitMiddleware,
+    authValidation.resendOtp,
+    authController.resendOtp
   )
 
   // router.post('/auth/testMail', authGuard.isGuest, () => {

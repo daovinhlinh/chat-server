@@ -5,6 +5,7 @@ import winston from 'winston'
 
 import { CustomReasonPhrases, ExpiresInDays } from '~/constants'
 import {
+  ResendOtpPayload,
   SignInPayload,
   SignOutPayload,
   SignUpPayload,
@@ -25,12 +26,37 @@ import { createDateAddDaysFromNow } from '~/utils/dates'
 import otpGenerator from 'otp-generator'
 import { redis } from '~/config/redis'
 import { mailOptions, mailService } from '~/config/mail'
+import { smsService } from '~/config/sms'
+
+const sendOtp = async (username: string) => {
+  // mailService.sendMail(
+  //   mailOptions(`This is OTP for ${user.username}: ${otp}`),
+  //   (error, info) => {
+  //     if (error) {
+  //       console.error('Error sending email: ', error)
+  //     } else {
+  //       console.log('Email sent: ', info.response)
+  //     }
+  //   }
+  // )
+
+  const otp = otpGenerator.generate(6, {
+    lowerCaseAlphabets: false,
+    upperCaseAlphabets: false,
+    specialChars: false
+  })
+  console.log('otp', otp)
+  await redis.client.set(`OTP_${username}`, otp, {
+    EX: Number(process.env.OTP_EXPIRED_TIME)
+  })
+}
 
 const signIn = async (
   { body: { username, password } }: IBodyRequest<SignInPayload>,
   res: Response
 ) => {
   try {
+    // smsService.sendSms('+84767640084', 'This is OTP for you')
     const userDoc = await userService.getByUsername(username)
 
     const comparePassword = userDoc?.comparePassword(password)
@@ -40,52 +66,37 @@ const signIn = async (
         status: StatusCodes.NOT_FOUND
       })
     }
-
+    console.log(userDoc)
     if (!userDoc.verified) {
-      const otp = otpGenerator.generate(6, {
-        lowerCaseAlphabets: false,
-        upperCaseAlphabets: false,
-        specialChars: false
-      })
+      try {
+        // const otp = otpGenerator.generate(6, {
+        //   lowerCaseAlphabets: false,
+        //   upperCaseAlphabets: false,
+        //   specialChars: false
+        // })
+        // console.log('otp', otp)
 
-      // redis.client
-      //   .set(`OTP_${username}`, otp, { EX: 60 }) //expired in 1 minute
-      //   .then(async value => {
-      //     console.log(console.log('OTP stored in Redis for user', value))
-      //     try {
-      //       mailService.sendMail(
-      //         mailOptions(`This is OTP for ${user.username}: ${otp}`),
-      //         (error, info) => {
-      //           if (error) {
-      //             console.error('Error sending email: ', error)
-      //           } else {
-      //             console.log('Email sent: ', info.response)
-      //           }
-      //         }
-      //       )
+        // await redis.client.set(`OTP_${username}`, otp, {
+        //   EX: Number(process.env.OTP_EXPIRED_TIME)
+        // }) //expired in 1 minute
 
-      //       return res.status(StatusCodes.BAD_REQUEST).json({
-      //         message: CustomReasonPhrases.ACCOUNT_NOT_VERIFIED,
-      //         status: StatusCodes.BAD_REQUEST
-      //       })
-      //     } catch (error) {
-      //       console.error('Error sending email: ', error)
-
-      //       // Return error response if email sending fails
-      //       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      //         message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-      //         status: StatusCodes.INTERNAL_SERVER_ERROR
-      //       })
-      //     }
-      //   })
-      //   .catch(async err => {
-      //     winston.error(err)
-      //     console.error('Error storing OTP in Redis: ', err)
-      //     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      //       message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-      //       status: StatusCodes.INTERNAL_SERVER_ERROR
-      //     })
-      //   })
+        await sendOtp(username)
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          data: {
+            expired_time: process.env.OTP_EXPIRED_TIME
+          },
+          message: CustomReasonPhrases.ACCOUNT_NOT_VERIFIED,
+          status: StatusCodes.BAD_REQUEST
+        })
+      } catch (error) {
+        console.error('Error sending email: ', error)
+        winston.error(error)
+        // console.error('Error storing OTP in Redis: ', err)
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+          status: StatusCodes.INTERNAL_SERVER_ERROR
+        })
+      }
     }
 
     const { token: accessToken } = jwtSign(
@@ -111,6 +122,7 @@ const signIn = async (
       status: StatusCodes.OK
     })
   } catch (error) {
+    console.log('error', error)
     winston.error(error)
 
     return res.status(StatusCodes.BAD_REQUEST).json({
@@ -219,6 +231,14 @@ const verifyOtp = (
   redis.client
     .get(`OTP_${username}`)
     .then(async storedOtp => {
+      console.log('storedOtp', storedOtp)
+      if (!storedOtp) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          message: CustomReasonPhrases.OTP_NOT_SENT,
+          status: StatusCodes.BAD_REQUEST
+        })
+      }
+
       if (storedOtp === otp) {
         const user = await userService.getByUsername(username)
 
@@ -252,6 +272,25 @@ const verifyOtp = (
         status: StatusCodes.INTERNAL_SERVER_ERROR
       })
     })
+}
+
+const resendOtp = async (
+  { body: { username } }: IBodyRequest<ResendOtpPayload>,
+  res: Response
+) => {
+  try {
+    await sendOtp(username)
+
+    return res.status(StatusCodes.OK).json({
+      message: ReasonPhrases.OK,
+      status: StatusCodes.OK
+    })
+  } catch (error) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: ReasonPhrases.BAD_REQUEST,
+      status: StatusCodes.BAD_REQUEST
+    })
+  }
 }
 
 const signOut = async (
@@ -369,7 +408,8 @@ export const authController = {
   signUp,
   verifyOtp,
   signOut,
-  refresh
+  refresh,
+  resendOtp
   // signOut: async (
   //   { context: { user, accessToken } }: IContextRequest<IUserRequest>,
   //   res: Response
