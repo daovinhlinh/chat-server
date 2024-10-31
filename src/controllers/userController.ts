@@ -218,8 +218,6 @@ const searchByUsername = async (
   try {
     const data = await userService.searchByUsername(username)
 
-    console.log(data)
-
     return res.status(StatusCodes.OK).json({
       data: {
         users: data.docs,

@@ -316,7 +316,6 @@ const getHistory = async (
               }
             })
           )
-          console.log(arrayOfResults)
 
           socket.sendToTxUser({
             taixiu: { history: { data: arrayOfResults, page, kmess, total } }
