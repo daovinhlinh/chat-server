@@ -46,6 +46,7 @@ const create = async (
     const user = new User({
       username,
       password,
+      coins: 10000,
       role
     })
     const saved = await user.save({ session })
