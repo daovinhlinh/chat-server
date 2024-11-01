@@ -984,7 +984,7 @@ const thongtin_thanhtoan = async (
 
 const playGame = () => {
   if (!io) return
-  io.TaiXiu_time = 72
+  io.TaiXiu_time = 57
   gameLoop = setInterval(async () => {
     if (!io) return
     if (!(io.TaiXiu_time % 5)) {
@@ -1053,7 +1053,7 @@ const playGame = () => {
     //     })
     //   })
     // }
-    if (io.TaiXiu_time == 60) {
+    if (io.TaiXiu_time == 45) {
       // ThongBao.findOne(
       //   { active: 1 },
       //   'thongbao1 thongbao2 thongbao3 hienthitb',
@@ -1087,7 +1087,7 @@ const playGame = () => {
     //bot.regbot();
     io.TaiXiu_time--
     // console.log(io.TaiXiu_time);
-    if (io.TaiXiu_time <= 60) {
+    if (io.TaiXiu_time <= 45) {
       // if (io.TaiXiu_time == 20) {
       //   ThongBao.findOne(
       //     { active: 1 },
