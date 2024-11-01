@@ -93,7 +93,7 @@ const getRanking = async (_: IContextRequest<IUserRequest>, res: Response) => {
 
     const topUsers: ITopUser[] = await Promise.all(
       list.map(async obj => {
-        const result2 = await User.findOne({ id: obj.uid }).exec()
+        const result2 = await User.findById(obj.uid).exec()
         return {
           name: result2 ? result2.username : '',
           bet: obj.total
