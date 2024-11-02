@@ -1,4 +1,6 @@
+import { ReasonPhrases, StatusCodes } from 'http-status-codes'
 import { Socket, DefaultEventsMap, Event } from 'socket.io'
+import { Response, Request } from 'express'
 import { ISocketData } from '~/contracts/socket'
 import {
   ITaiXiuCuocPayload,
@@ -337,4 +339,25 @@ const getHistory = async (
   }
 }
 
-export const taixiuController = { cuoc, getLogs, getHistory }
+const getCurrentGameTime = async (req: Request, res: Response) => {
+  const io = getSocketServer()
+  if (!io) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      status: StatusCodes.INTERNAL_SERVER_ERROR
+    })
+  }
+
+  return res.status(StatusCodes.OK).json({
+    data: { time: io.TaiXiu_time },
+    message: ReasonPhrases.OK,
+    status: StatusCodes.OK
+  })
+}
+
+export const taixiuController = {
+  cuoc,
+  getLogs,
+  getHistory,
+  getCurrentGameTime
+}

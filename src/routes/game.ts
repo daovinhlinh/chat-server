@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { gameController } from '~/controllers'
+import { taixiuController } from '~/controllers/taixiuController'
 import { authGuard } from '~/guards'
 
 export const game = (router: Router): void => {
@@ -8,4 +9,6 @@ export const game = (router: Router): void => {
   router.get('/game/ranking', gameController.getRanking)
 
   router.post('/game/updateCoin', authGuard.isAdmin, gameController.updateCoin)
+
+  router.get('/game/getCurrentGameTime', taixiuController.getCurrentGameTime)
 }
