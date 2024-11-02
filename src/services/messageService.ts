@@ -23,7 +23,7 @@ const getPublicMessages = async (page: number = 1, limit: number = 50) => {
 
   const [docs, totalDocs] = await Promise.all([
     PublicMessage.find({})
-      .sort({ createdAt: 'asc' })
+      .sort({ createdAt: 'desc' })
       .skip(skip)
       .limit(limit)
       .populate('sender'), // Populate after limit and skip
