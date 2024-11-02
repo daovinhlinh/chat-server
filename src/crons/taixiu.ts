@@ -333,7 +333,7 @@ const thongtin_thanhtoan = async (
                     }
                     obj.betwin = betwinP
                     let redUpdate = obj.bet + betwinP + addnohu //2000+980+0
-                    let addquyhu = betwinP * 0.003 //29.4
+                    let addquyhu = Math.floor(betwinP * 0.003)
 
                     User.updateOne(
                       { _id: obj.uid },
@@ -476,7 +476,7 @@ const thongtin_thanhtoan = async (
                   } else {
                     addnohu = 0
                   }
-                  let addquyhu = betwin * 0.003
+                  let addquyhu = Math.floor(betwin * 0.003)
                   obj.thanhtoan = true
                   obj.win = true
                   obj.betwin = betwin
@@ -667,7 +667,7 @@ const thongtin_thanhtoan = async (
                     } else {
                       addnohu = 0
                     }
-                    const addquyhu = betwinP * 0.003
+                    const addquyhu = Math.floor(betwinP * 0.003)
                     obj.betwin = betwinP
                     let coinUpdate = obj.bet + betwinP + addnohu
                     User.updateOne(
@@ -810,7 +810,7 @@ const thongtin_thanhtoan = async (
                   } else {
                     addnohu = 0
                   }
-                  const addquyhu = betwin * 0.003
+                  const addquyhu = Math.floor(betwin * 0.003)
                   obj.thanhtoan = true
                   obj.win = true
                   obj.betwin = betwin
