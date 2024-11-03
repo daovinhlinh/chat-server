@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose'
 import { compareSync } from 'bcrypt'
-import { IUser, IUserMethods, UserModel } from '~/contracts/user'
+import { IUser, IUserMethods, UserModel, UserRole } from '~/contracts/user'
 
 const schema = new Schema<IUser, UserModel, IUserMethods>(
   {
@@ -49,8 +49,8 @@ const schema = new Schema<IUser, UserModel, IUserMethods>(
     },
     role: {
       type: String,
-      enum: ['user', 'admin'],
-      default: 'user'
+      enum: UserRole,
+      default: UserRole.USER
     },
     verified: {
       type: Boolean,

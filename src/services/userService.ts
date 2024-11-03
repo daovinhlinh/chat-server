@@ -1,5 +1,5 @@
 import { ClientSession, ObjectId } from 'mongoose'
-import { IUser, UpdateProfilePayload } from '~/contracts/user'
+import { IUser, UpdateProfilePayload, UserRole } from '~/contracts/user'
 import { TaiXiuUser } from '~/models/TaiXiu_user'
 import { User } from '~/models/User'
 import { paginate } from '~/utils/paging'
@@ -33,12 +33,12 @@ const create = async (
   {
     username,
     password,
-    role = 'user'
+    role = UserRole.USER
   }: {
     username: string
     password: string
     verified?: boolean
-    role: 'user' | 'admin'
+    role: UserRole
   },
   session?: ClientSession
 ) => {

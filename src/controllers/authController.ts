@@ -133,7 +133,7 @@ const signIn = async (
 }
 
 const signUp = async (
-  { body: { username, password, role = 'user' } }: IBodyRequest<SignUpPayload>,
+  { body: { username, password, role } }: IBodyRequest<SignUpPayload>,
   res: Response
 ) => {
   const session = await startSession()

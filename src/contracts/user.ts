@@ -1,12 +1,18 @@
 import { Model, ObjectId } from 'mongoose'
 
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
+  BOT = 'bot'
+}
+
 export interface IUser {
-  id: ObjectId
+  _id: ObjectId
   username: string
   email: string
   password: string
   phoneNumber?: string
-  role: 'user' | 'admin'
+  role: UserRole
   coins: number
   coinsWin: number
   coinsLose: number
@@ -38,9 +44,13 @@ export interface DeleteProfilePayload {
   userId: ObjectId
 }
 
-export type GetUserByIdPayload = Pick<IUser, 'id'>
+export type GetUserByIdPayload = {
+  id: ObjectId
+}
 
 export type GetAllUsersPayload = {
   limit: number
   page: number
 }
+
+export type IUserWithoutId = Omit<IUser, '_id'>
