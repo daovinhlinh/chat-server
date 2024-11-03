@@ -69,6 +69,7 @@ const cuoc = async (socket: ExtendedSocket, data: ITaiXiuCuocPayload) => {
               }
               // io.taixiuAdmin.list.unshift({name:user.name, select:select, bet:bet, time:new Date()});
               // io = null;
+
               TaiXiuCuoc.create({
                 uid: socket.data.user.id,
                 name: user.username,

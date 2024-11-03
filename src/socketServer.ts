@@ -23,7 +23,7 @@ export function initializeSocketServer(server: http.Server) {
       phien: 0
     }
   }
-
+  io.listBot = []
   return io
 }
 

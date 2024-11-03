@@ -1,6 +1,8 @@
 import { DefaultEventsMap, Server, Event } from 'socket.io'
 import { ISocketData } from '~/contracts/socket'
 import { ITaiXiuData, ITaiXiuUser, ITopUser } from '~/contracts/taixiu'
+import { IUser, IUserWithoutId, UserRole } from '~/contracts/user'
+import helpers from '~/helpers'
 import { Hu } from '~/models/Hu'
 import { HuTx } from '~/models/HuTX'
 import { LichSuCuoc } from '~/models/LichSu_Cuoc'
@@ -10,10 +12,7 @@ import { TaiXiuPhien } from '~/models/TaiXiu_phien'
 import { TaiXiuUser } from '~/models/TaiXiu_user'
 import { User } from '~/models/User'
 import { getSocketServer } from '~/socketServer'
-
-let io: ExtendedServer | null = null
-let gameLoop: NodeJS.Timeout | null = null
-
+import { bot } from './bot'
 export interface ServerToClientEvents {
   taixiu: (data: any) => void
 }
@@ -26,6 +25,7 @@ export interface ExtendedServer
     ISocketData
   > {
   listTop: ITopUser[]
+  listBot: IUser[]
   taixiu: {
     taixiu: ITaiXiuData
   }
@@ -35,20 +35,11 @@ export interface ExtendedServer
   sendToTxUser: (data: any) => void
 }
 
-// let GetTop = function () {
-// 	TaiXiuUser.find({ 'total': { $gt: 0 } }, 'total uid', { sort: { totall: -1 }, limit: 10 },  (err, results) => {
-// 		Promise.all(results.map(function (obj) {
-// 			return new Promise(function (resolve, reject) {
-// 				UserInfo.findOne({ 'id': obj.uid }, function (error, result2) {
-// 					resolve({ name: !!result2 ? result2.name : '', bet: obj.totall, type: result2.type });
-// 				})
-// 			})
-// 		}))
-// 			.then(function (result) {
-// 				io.listTop = result;
-// 			});
-// 	});
-// };
+let io: ExtendedServer | null = null
+let gameLoop: NodeJS.Timeout | null = null
+const enableBot = true
+let botTemp: IUser[] = []
+let botList: IUser[] = []
 
 const getTop = async (): Promise<void> => {
   try {
@@ -253,10 +244,11 @@ const thongtin_thanhtoan = async (
                   obj.tralai = obj.bet
                   obj.save()
 
-                  User.updateOne(
-                    { _id: obj.uid },
-                    { $inc: { coins: obj.bet } }
-                  ).exec()
+                  !obj.bot &&
+                    User.updateOne(
+                      { _id: obj.uid },
+                      { $inc: { coins: obj.bet } }
+                    ).exec()
 
                   LichSuCuoc.updateOne(
                     { uid: obj.uid, phien: game_id },
@@ -274,16 +266,12 @@ const thongtin_thanhtoan = async (
                   // Trả lại 1 phần
                   let betPlay = obj.bet - tong_coin_chenh //1000
                   let betwinP = 0
-
+                  //100000 chenh 10000 => betPlay = 90000
                   obj.thanhtoan = true
                   obj.win = win
                   obj.tralai = tong_coin_chenh
                   tong_coin_chenh = 0
 
-                  // Helpers.MissionAddCurrent(
-                  //   obj.uid,
-                  //   (betPlay * 0.02) >> 0
-                  // )
                   let addnohu = 0
                   if (win) {
                     // Thắng nhưng bị trừ tiền trả lại
@@ -335,17 +323,18 @@ const thongtin_thanhtoan = async (
                     let redUpdate = obj.bet + betwinP + addnohu //2000+980+0
                     let addquyhu = Math.floor(betwinP * 0.003)
 
-                    User.updateOne(
-                      { _id: obj.uid },
-                      {
-                        $inc: {
-                          total: betwinP,
-                          coins: redUpdate,
-                          coinsPlayed: betPlay,
-                          coinsWin: betwinP
+                    !obj.bot &&
+                      User.updateOne(
+                        { _id: obj.uid },
+                        {
+                          $inc: {
+                            total: betwinP,
+                            coins: redUpdate,
+                            coinsPlayed: betPlay,
+                            coinsWin: betwinP
+                          }
                         }
-                      }
-                    ).exec()
+                      ).exec()
 
                     TaiXiuUser.updateOne(
                       { uid: obj.uid },
@@ -391,17 +380,21 @@ const thongtin_thanhtoan = async (
                     //   })
                     // }
                   } else {
-                    User.updateOne(
-                      { _id: obj.uid },
-                      {
-                        $inc: {
-                          total: -betPlay,
-                          coins: obj.tralai,
-                          coinsPlayed: betPlay,
-                          coinsLose: betPlay
+                    //1000000 - 500000: bet - 50000
+                    //Chenh: 500000
+                    //Coin chenh < 500000
+                    !obj.bot &&
+                      User.updateOne(
+                        { _id: obj.uid },
+                        {
+                          $inc: {
+                            total: -betPlay,
+                            coins: obj.tralai,
+                            coinsPlayed: betPlay,
+                            coinsLose: betPlay
+                          }
                         }
-                      }
-                    ).exec()
+                      ).exec()
 
                     LichSuCuoc.updateOne(
                       { uid: obj.uid, phien: game_id },
@@ -504,17 +497,18 @@ const thongtin_thanhtoan = async (
 
                   let redUpdate = obj.bet + betwin + addnohu
 
-                  User.updateOne(
-                    { _id: obj.uid },
-                    {
-                      $inc: {
-                        total: betwin,
-                        coins: redUpdate,
-                        coinsWin: betwin,
-                        coinsPlayed: obj.bet
+                  !obj.bot &&
+                    User.updateOne(
+                      { _id: obj.uid },
+                      {
+                        $inc: {
+                          total: betwin,
+                          coins: redUpdate,
+                          coinsWin: betwin,
+                          coinsPlayed: obj.bet
+                        }
                       }
-                    }
-                  ).exec()
+                    ).exec()
                   TaiXiuUser.updateOne(
                     { uid: obj.uid },
                     {
@@ -551,16 +545,17 @@ const thongtin_thanhtoan = async (
                   //   (obj.bet * 0.02) >> 0
                   // )
 
-                  User.updateOne(
-                    { _id: obj.uid },
-                    {
-                      $inc: {
-                        total: -obj.bet,
-                        coinsLose: obj.bet,
-                        coinsPlayed: obj.bet
+                  !obj.bot &&
+                    User.updateOne(
+                      { _id: obj.uid },
+                      {
+                        $inc: {
+                          total: -obj.bet,
+                          coinsLose: obj.bet,
+                          coinsPlayed: obj.bet
+                        }
                       }
-                    }
-                  ).exec()
+                    ).exec()
 
                   LichSuCuoc.updateOne(
                     { uid: obj.uid, phien: game_id },
@@ -595,10 +590,11 @@ const thongtin_thanhtoan = async (
                   obj.tralai = obj.bet
                   obj.save()
 
-                  User.updateOne(
-                    { _id: obj.uid },
-                    { $inc: { coins: obj.bet } }
-                  ).exec()
+                  !obj.bot &&
+                    User.updateOne(
+                      { _id: obj.uid },
+                      { $inc: { coins: obj.bet } }
+                    ).exec()
 
                   LichSuCuoc.updateOne(
                     { uid: obj.uid, phien: game_id },
@@ -670,17 +666,18 @@ const thongtin_thanhtoan = async (
                     const addquyhu = Math.floor(betwinP * 0.003)
                     obj.betwin = betwinP
                     let coinUpdate = obj.bet + betwinP + addnohu
-                    User.updateOne(
-                      { _id: obj.uid },
-                      {
-                        $inc: {
-                          total: betwinP,
-                          coins: coinUpdate,
-                          coinsPlayed: betPlay,
-                          coinsWin: betwinP
+                    !obj.bot &&
+                      User.updateOne(
+                        { _id: obj.uid },
+                        {
+                          $inc: {
+                            total: betwinP,
+                            coins: coinUpdate,
+                            coinsPlayed: betPlay,
+                            coinsWin: betwinP
+                          }
                         }
-                      }
-                    ).exec()
+                      ).exec()
 
                     LichSuCuoc.updateOne(
                       { uid: obj.uid, phien: game_id },
@@ -726,18 +723,18 @@ const thongtin_thanhtoan = async (
                     //   })
                     // }
                   } else {
-                    // !obj.bot &&
-                    User.updateOne(
-                      { _id: obj.uid },
-                      {
-                        $inc: {
-                          total: -betPlay,
-                          coins: obj.tralai,
-                          coinsPlayed: betPlay,
-                          coinsLose: betPlay
+                    !obj.bot &&
+                      User.updateOne(
+                        { _id: obj.uid },
+                        {
+                          $inc: {
+                            total: -betPlay,
+                            coins: obj.tralai,
+                            coinsPlayed: betPlay,
+                            coinsLose: betPlay
+                          }
                         }
-                      }
-                    ).exec()
+                      ).exec()
                     LichSuCuoc.updateOne(
                       { uid: obj.uid, phien: game_id },
                       {
@@ -837,18 +834,18 @@ const thongtin_thanhtoan = async (
                   // }
 
                   let redUpdate = obj.bet + betwin + addnohu
-                  // !obj.bot &&
-                  User.updateOne(
-                    { _id: obj.uid },
-                    {
-                      $inc: {
-                        total: betwin,
-                        coins: redUpdate,
-                        coinsWin: betwin,
-                        coinsPlayed: obj.bet
+                  !obj.bot &&
+                    User.updateOne(
+                      { _id: obj.uid },
+                      {
+                        $inc: {
+                          total: betwin,
+                          coins: redUpdate,
+                          coinsWin: betwin,
+                          coinsPlayed: obj.bet
+                        }
                       }
-                    }
-                  ).exec()
+                    ).exec()
                   TaiXiuUser.updateOne(
                     { uid: obj.uid },
                     {
@@ -884,17 +881,17 @@ const thongtin_thanhtoan = async (
                   obj.thanhtoan = true
                   obj.save()
 
-                  // !obj.bot &&
-                  User.updateOne(
-                    { _id: obj.uid },
-                    {
-                      $inc: {
-                        total: -obj.bet,
-                        coinsLose: obj.bet,
-                        coinsPlayed: obj.bet
+                  !obj.bot &&
+                    User.updateOne(
+                      { _id: obj.uid },
+                      {
+                        $inc: {
+                          total: -obj.bet,
+                          coinsLose: obj.bet,
+                          coinsPlayed: obj.bet
+                        }
                       }
-                    }
-                  ).exec()
+                    ).exec()
                   LichSuCuoc.updateOne(
                     { uid: obj.uid, phien: game_id },
                     {
@@ -1274,42 +1271,6 @@ const playGame = () => {
           dice3 = undefined
         }
 
-        // TXPhien.create(
-        //   { dice1: dice1, dice2: dice2, dice3: dice3, time: new Date() },
-        //   function (err, create) {
-        //     if (!!create) {
-        //       io.TaiXiu_phien = create.id + 1
-        //       thongtin_thanhtoan(create.id, dice1 + dice2 + dice3)
-        //       io.sendAllUser({
-        //         taixiu: {
-        //           finish: {
-        //             dices: [create.dice1, create.dice2, create.dice3],
-        //             phien: create.id
-        //           }
-        //         }
-        //       })
-
-        //       Object.values(io.admins).forEach(function (admin) {
-        //         admin.forEach(function (client) {
-        //           client.red({
-        //             taixiu: {
-        //               finish: {
-        //                 dices: [create.dice1, create.dice2, create.dice3],
-        //                 phien: create.id
-        //               }
-        //             }
-        //           })
-        //           client = null
-        //         })
-        //         admin = null
-        //       })
-        //       dice1 = null
-        //       dice2 = null
-        //       dice3 = null
-        //     }
-        //   }
-        // )
-
         io.taixiu = {
           taixiu: {
             player_tai: 0,
@@ -1331,47 +1292,41 @@ const playGame = () => {
 
         // getTop()
 
-        // let taixiucf = Helpers.getConfig('taixiu')
-        // if (
-        //   !!taixiucf &&
-        //   taixiucf.bot &&
-        //   !!io.listBot &&
-        //   io.listBot.length > 0
-        // ) {
-        //   // lấy danh sách tài khoản bot
-        //   botTemp = [...io.listBot]
-        //   botList = [...io.listBot]
-        //   let maxBot = ((botList.length * 100) / 100) >> 0
-        //   botList = Helpers.shuffle(botList) // tráo
-        //   botList = botList.slice(0, maxBot)
-        //   botListChat = botTemp
-        //   maxBot = null
-        // } else {
-        //   botTemp = []
-        //   botList = []
-        //   botListChat = []
-        // }
+        if (!!enableBot && !!io.listBot && io.listBot.length > 0) {
+          // lấy danh sách tài khoản bot
+          botTemp = [...io.listBot]
+          botList = [...io.listBot]
+          let maxBot = ((botList.length * 100) / 100) >> 0
+          botList = helpers.shuffle(botList) // tráo
+          botList = botList.slice(0, maxBot)
+          // botListChat = botTemp
+          // maxBot = null
+        } else {
+          botTemp = []
+          botList = []
+          // botListChat = []
+        }
       } else {
         thongtin_thanhtoan(io.TaiXiu_phien)
 
         //Bot random
-        // if (!!botList.length && io.TaiXiu_time > 5) {
-        //   let userCuoc = 0
-        //   if (!((Math.random() * 3) >> 0)) {
-        //     userCuoc = (Math.random() * 9) >> 0
-        //   } else {
-        //     userCuoc = (Math.random() * 5) >> 0
-        //   }
-        //   let iH = 0
-        //   for (iH = 0; iH < userCuoc; iH++) {
-        //     let dataT = botList[iH]
-        //     if (!!dataT) {
-        //       bot.tx(dataT, io)
-        //       botList.splice(iH, 1) // Xoá bot đã đặt tránh trùng lặp
-        //     }
-        //     dataT = null
-        //   }
-        // }
+        if (!!botList.length && io.TaiXiu_time > 5) {
+          let userCuoc = 0
+          if (!((Math.random() * 3) >> 0)) {
+            userCuoc = (Math.random() * 9) >> 0
+          } else {
+            userCuoc = (Math.random() * 5) >> 0
+          }
+          let iH = 0
+          for (iH = 0; iH < userCuoc; iH++) {
+            let dataT = botList[iH]
+            if (!!dataT) {
+              bot.tx(dataT, io)
+              botList.splice(iH, 1) // Xoá bot đã đặt tránh trùng lặp
+            }
+            // dataT = []
+          }
+        }
       }
     }
     // botHu(io, botTemp)
@@ -1379,35 +1334,31 @@ const playGame = () => {
   return gameLoop
 }
 
-const init = (): void => {
-  // io = obj as ExtendedServer
-
+const init = async () => {
   io = getSocketServer()
-  // io.sendToTxUser = data => {
-  //   if (!io) return
-  //   // Using boardcast
-  //   io.emit('taixiu', data)
-  // }
   io.listTop = []
 
-  // Commented out bot list initialization
-  // UserInfo.find({ type: true }, 'id name', function (err, list: UserInfo[]) {
-  // 	console.log('UserInfo', list)
-  // 	if (list && list.length) {
-  // 		io.listBot = list.map(function (user) {
-  // 			user = user._doc!;
-  // 			delete user._id;
-  // 			return user;
-  // 		});
-  // 		list = null;
+  // // Register 10 bot
+  // Promise.all([
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot()
+  // ])
 
-  // 		let botList: UserInfo[] = [...io.listBot];
-  // 		let maxBot = (botList.length * 100 / 100) >> 0;
-  // 		botList = Helpers.shuffle(botList); // tráo
-  // 		botList = botList.slice(0, maxBot);
-  // 		maxBot = null;
-  // 	}
-  // });
+  // Commented out bot list initialization
+  const list = await User.find({ role: UserRole.BOT }, 'id username')
+
+  if (list && list.length) {
+    io.listBot = list
+    // list = null;
+
+    let botList: IUserWithoutId[] = [...io.listBot]
+    let maxBot = ((botList.length * 100) / 100) >> 0
+    botList = helpers.shuffle(botList) // tráo
+    botList = botList.slice(0, maxBot)
+  }
 
   io.taixiu = {
     taixiu: {

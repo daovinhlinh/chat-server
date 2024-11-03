@@ -21,6 +21,7 @@ export interface ITaiXiuCuoc {
   betwin: number
   wincaonhat: number
   time: Date
+  bot: boolean
 }
 
 export interface ITaiXiuPhien {

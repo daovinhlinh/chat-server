@@ -13,7 +13,8 @@ const schema: Schema = new Schema({
   win: { type: Boolean, default: false }, // Thắng hoặc thua
   betwin: { type: Number, default: 0 }, // Tiền thắng được
   wincaonhat: { type: Number, default: 0 },
-  time: { type: Date } // thời gian cược
+  time: { type: Date }, // thời gian cược
+  bot: { type: Boolean, default: false } // là botqa
 })
 
 schema.plugin(MongooseAutoIncrementID.plugin, {
