@@ -61,15 +61,7 @@ const tx = (bot: IUser, io: ExtendedServer) => {
       select: select,
       bet: cuoc
     })
-    console.log('bot cuoc', {
-      uid: bot._id,
-      bot: true,
-      name: bot.username,
-      phien: io.TaiXiu_phien,
-      bet: cuoc,
-      select: select,
-      time: new Date()
-    })
+
     TaiXiuCuoc.create({
       uid: bot._id,
       bot: true,
