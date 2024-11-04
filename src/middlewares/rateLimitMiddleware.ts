@@ -22,10 +22,10 @@ export const rateLimitMiddleware = rateLimit({
 // For resend OTP
 export const resendOtpRateLimitMiddleware = rateLimit({
   windowMs: 1 * process.env.OTP_EXPIRED_TIME * 1000, // 1 minutes
-  max: 1,
+  max: 3,
   message: 'Too many resend OTP attempts, please try again later.',
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable `X-RateLimit-*` headers
+  // standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  // legacyHeaders: false, // Disable `X-RateLimit-*` headers
   handler: (req, res) => {
     res.status(StatusCodes.TOO_MANY_REQUESTS).json({
       message: 'Too many requests, please try again later.',
