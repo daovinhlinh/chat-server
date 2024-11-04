@@ -580,7 +580,7 @@ const thongtin_thanhtoan = async (
             } else if (obj.select === false) {
               // Tổng Red Xỉu
               let win = (dice as number) > 10 ? false : true
-              if (coin_lech_tai && tong_coin_chenh && tong_coin_chenh > 0) {
+              if (!coin_lech_tai && tong_coin_chenh && tong_coin_chenh > 0) {
                 if (tong_coin_chenh >= obj.bet) {
                   // Trả lại hoàn toàn
                   tong_coin_chenh -= obj.bet
@@ -1118,7 +1118,9 @@ const playGame = () => {
             taixiu: {
               taixiu: {
                 coin_tai: io.taixiu.taixiu.coin_tai,
-                coin_xiu: io.taixiu.taixiu.coin_xiu
+                coin_xiu: io.taixiu.taixiu.coin_xiu,
+                player_tai: io.taixiu.taixiu.player_tai,
+                player_xiu: io.taixiu.taixiu.player_xiu
               },
               err: 'Trả tiền cân cửa.'
             }
@@ -1129,7 +1131,9 @@ const playGame = () => {
             taixiu: {
               taixiu: {
                 coin_tai: io.taixiu.taixiu.coin_tai,
-                coin_xiu: io.taixiu.taixiu.coin_xiu
+                coin_xiu: io.taixiu.taixiu.coin_xiu,
+                player_tai: io.taixiu.taixiu.player_tai,
+                player_xiu: io.taixiu.taixiu.player_xiu
               },
               err: 'Trả tiền cân cửa.'
             }
@@ -1242,9 +1246,12 @@ const playGame = () => {
         // }
         */
 
-        let dice1: number | undefined = Math.floor(Math.random() * 6) + 1
-        let dice2: number | undefined = Math.floor(Math.random() * 6) + 1
-        let dice3: number | undefined = Math.floor(Math.random() * 6) + 1
+        // let dice1: number | undefined = Math.floor(Math.random() * 6) + 1
+        // let dice2: number | undefined = Math.floor(Math.random() * 6) + 1
+        // let dice3: number | undefined = Math.floor(Math.random() * 6) + 1
+        let dice1: number | undefined = 1
+        let dice2: number | undefined = 1
+        let dice3: number | undefined = 2
 
         const phien = await TaiXiuPhien.create({
           dice1,
@@ -1338,8 +1345,28 @@ const init = async () => {
   io = getSocketServer()
   io.listTop = []
 
-  // // Register 10 bot
+  // Register 10 bot
   // Promise.all([
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
+  //   bot.regbot(),
   //   bot.regbot(),
   //   bot.regbot(),
   //   bot.regbot(),
