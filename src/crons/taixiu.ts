@@ -1246,12 +1246,9 @@ const playGame = () => {
         // }
         */
 
-        // let dice1: number | undefined = Math.floor(Math.random() * 6) + 1
-        // let dice2: number | undefined = Math.floor(Math.random() * 6) + 1
-        // let dice3: number | undefined = Math.floor(Math.random() * 6) + 1
-        let dice1: number | undefined = 1
-        let dice2: number | undefined = 1
-        let dice3: number | undefined = 2
+        let dice1: number | undefined = Math.floor(Math.random() * 6) + 1
+        let dice2: number | undefined = Math.floor(Math.random() * 6) + 1
+        let dice3: number | undefined = Math.floor(Math.random() * 6) + 1
 
         const phien = await TaiXiuPhien.create({
           dice1,
