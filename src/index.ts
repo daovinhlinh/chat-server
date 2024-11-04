@@ -38,6 +38,9 @@ app.use(
 
 app.use(express.static(path.join(__dirname, 'public')))
 
+app.set('trust proxy', 1)
+app.get('/ip', (request, response) => response.send(request.ip))
+
 app.use('/api/v1/', router, notFoundMiddleware)
 // app.use()
 
