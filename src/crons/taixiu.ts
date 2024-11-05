@@ -441,7 +441,7 @@ const thongtin_thanhtoan = async (
                     const hutai = betwin * (hutaix ?? 0)
                     addnohu = Math.ceil(hutai / lettongtai)
 
-                    Hu.create({
+                    HuTx.create({
                       name: obj.name,
                       uid: obj.uid,
                       phien: game_id,
@@ -633,7 +633,7 @@ const thongtin_thanhtoan = async (
                       const hutai = betwinP * (hutaix ?? 0)
                       addnohu = Math.ceil(hutai / lettongtai)
                       //HUTX.updateMany({lenh:'1'}, {phien:'0',lenh:'0'}).exec();
-                      Hu.create({
+                      HuTx.create({
                         name: obj.name,
                         uid: obj.uid,
                         phien: game_id,
@@ -780,7 +780,7 @@ const thongtin_thanhtoan = async (
                     addnohu = Math.ceil(hutai / lettongtai)
                     //HUTX.updateMany({lenh:'1'}, {phien:'0',lenh:'0'}).exec();
                     //LScuoc.create({uid:obj.uid, phien:game_id, bet:betwin, betwin:addnohu, thanhtoan:1, tienhienco:obj.red, game:'Nổ Hũ Tài Xỉu', time:new Date()});
-                    Hu.create({
+                    HuTx.create({
                       name: obj.name,
                       uid: obj.uid,
                       phien: game_id,
