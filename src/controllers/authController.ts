@@ -5,6 +5,7 @@ import winston from 'winston'
 
 import { CustomReasonPhrases, ExpiresInDays } from '~/constants'
 import {
+  ActivatePayload,
   ResendOtpPayload,
   SignInPayload,
   SignOutPayload,
@@ -27,8 +28,9 @@ import otpGenerator from 'otp-generator'
 import { redis } from '~/config/redis'
 import { mailOptions, mailService } from '~/config/mail'
 import { smsService } from '~/config/sms'
+import { TaiXiuCuoc } from '~/models/TaiXiu_cuoc'
 
-const sendOtp = async (username: string) => {
+const sendOtp = async (username: string, phoneNumber: string) => {
   // mailService.sendMail(
   //   mailOptions(`This is OTP for ${user.username}: ${otp}`),
   //   (error, info) => {
@@ -293,11 +295,11 @@ const verifyOtp = (
 }
 
 const resendOtp = async (
-  { body: { username } }: IBodyRequest<ResendOtpPayload>,
+  { body: { username, phoneNumber } }: IBodyRequest<ResendOtpPayload>,
   res: Response
 ) => {
   try {
-    await sendOtp(username)
+    await sendOtp(username, phoneNumber)
 
     return res.status(StatusCodes.OK).json({
       message: ReasonPhrases.OK,
@@ -421,13 +423,118 @@ const refresh = async (
   }
 }
 
+const activate = async (
+  {
+    body: { currentUsername, newUsername, password, otp, phone }
+  }: IBodyRequest<ActivatePayload>,
+  res: Response
+) => {
+  const session = await startSession()
+
+  try {
+    // Check if the current user exists
+    const currentUser = await userService.getByUsername(currentUsername)
+
+    if (!currentUser) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: CustomReasonPhrases.USER_NOT_FOUND,
+        status: StatusCodes.BAD_REQUEST
+      })
+    }
+
+    if (currentUser.verified) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: CustomReasonPhrases.ACCOUNT_ALREADY_VERIFIED,
+        status: StatusCodes.BAD_REQUEST
+      })
+    }
+
+    // Check if the new username is existed
+    const isNewUsernameExisted =
+      await userService.isExistByUsername(newUsername)
+
+    if (isNewUsernameExisted) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: CustomReasonPhrases.NEW_USERNAME_EXISTED,
+        status: StatusCodes.BAD_REQUEST
+      })
+    }
+
+    session.startTransaction()
+
+    // Check if the otp is correct
+    const storedOtp = await redis.client.get(`OTP_${currentUsername}`)
+
+    if (!storedOtp || storedOtp !== otp) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: CustomReasonPhrases.WRONG_OTP,
+        status: StatusCodes.BAD_REQUEST
+      })
+    }
+
+    const hashedPassword = await createHash(password)
+
+    // Update the user
+    const updatedUser = await userService.updateUsernameByUserId(
+      currentUser.id,
+      newUsername,
+      hashedPassword,
+      session
+    )
+
+    if (!updatedUser) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+        status: StatusCodes.INTERNAL_SERVER_ERROR
+      })
+    }
+
+    Promise.all([
+      userService.updateProfileByUserId(
+        currentUser.id,
+        { phoneNumber: phone, email: updatedUser.email },
+        session
+      ),
+      TaiXiuCuoc.updateMany(
+        { uid: currentUser.id },
+        { name: newUsername },
+        session
+      )
+    ])
+
+    updatedUser.verified = true
+    await updatedUser.save({ session })
+    await session.commitTransaction()
+    session.endSession()
+
+    return res.status(StatusCodes.OK).json({
+      message: ReasonPhrases.OK,
+      status: StatusCodes.OK
+    })
+  } catch (error) {
+    winston.error(error)
+    console.log(error)
+
+    if (session.inTransaction()) {
+      await session.abortTransaction()
+      session.endSession()
+    }
+
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: ReasonPhrases.BAD_REQUEST,
+      status: StatusCodes.BAD_REQUEST
+    })
+  }
+}
+
 export const authController = {
   signIn,
   signUp,
   verifyOtp,
   signOut,
   refresh,
-  resendOtp
+  resendOtp,
+  activate
   // signOut: async (
   //   { context: { user, accessToken } }: IContextRequest<IUserRequest>,
   //   res: Response

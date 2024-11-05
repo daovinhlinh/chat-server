@@ -25,6 +25,13 @@ export const auth = (router: Router): void => {
   )
 
   router.post(
+    '/auth/activate',
+    authGuard.isGuest,
+    authValidation.activate,
+    authController.activate
+  )
+
+  router.post(
     '/auth/verifyOtp',
     authGuard.isGuest,
     rateLimitMiddleware,

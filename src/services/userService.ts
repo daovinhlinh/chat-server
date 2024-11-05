@@ -80,6 +80,19 @@ const updateProfileByUserId = (
   return User.findOneAndUpdate(...params)
 }
 
+const updateUsernameByUserId = (
+  userId: ObjectId,
+  newUsername: string,
+  password: string,
+  session?: ClientSession
+) => {
+  return User.findOneAndUpdate(
+    { _id: userId },
+    { username: newUsername, password },
+    { new: true, session }
+  )
+}
+
 const deleteById = (userId: ObjectId, session?: ClientSession) =>
   User.deleteOne({ _id: userId }, { session })
 
@@ -123,5 +136,6 @@ export const userService = {
   updateProfileByUserId,
   updatePasswordByUserId,
   deleteById,
-  searchByUsername
+  searchByUsername,
+  updateUsernameByUserId
 }
