@@ -42,7 +42,7 @@ export const auth = (router: Router): void => {
   router.post(
     '/auth/resendOtp',
     authGuard.isGuest,
-    resendOtpRateLimitMiddleware,
+    // resendOtpRateLimitMiddleware,
     authValidation.resendOtp,
     authController.resendOtp
   )
