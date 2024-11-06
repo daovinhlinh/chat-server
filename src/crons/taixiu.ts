@@ -1,3 +1,4 @@
+import { Types } from 'mongoose'
 import { DefaultEventsMap, Server, Event } from 'socket.io'
 import { ISocketData } from '~/contracts/socket'
 import { ITaiXiuData, ITaiXiuUser, ITopUser } from '~/contracts/taixiu'
@@ -917,6 +918,7 @@ const thongtin_thanhtoan = async (
         ).then(function (resultUpdate) {
           playGame()
           setTaiXiu_user(game_id)
+          alertTopUser(game_id)
           //get_newtop(game_id, dice);
           tong_coin_chenh = null
           coin_lech_tai = null
@@ -976,6 +978,44 @@ const thongtin_thanhtoan = async (
     // if (io && !((io?.TaiXiu_time ?? 0) % 10)) {
     //   io.sendToTxUser(home)
     // }
+  }
+}
+
+const alertTopUser = async (phien: number) => {
+  if (!phien || !io) return
+  // Get list bet of session
+  const listBet = await TaiXiuOne.find({
+    phien: Number(phien),
+    win: true,
+    betwin: { $gt: 0 }
+  })
+
+  if (listBet && listBet.length > 0) {
+    // Get all user
+    const listUser = await User.find({
+      _id: { $in: listBet.map(bet => new Types.ObjectId(bet.uid)) },
+      role: UserRole.USER
+    })
+
+    if (listUser && listUser.length > 0) {
+      //get top 1 user with highest betwin from listbet
+      const topUser = listBet.sort((a, b) => b.betwin - a.betwin)[0]
+      // Get user by id
+      const user = listUser.find(user => user._id.toString() === topUser.uid)
+
+      if (user) {
+        io.sendToTxUser({
+          taixiu: {
+            notification: {
+              top: {
+                name: user?.username,
+                betwin: topUser.betwin
+              }
+            }
+          }
+        })
+      }
+    }
   }
 }
 
@@ -1260,7 +1300,6 @@ const playGame = () => {
         if (!!phien) {
           io.TaiXiu_phien = phien.id + 1
           thongtin_thanhtoan(phien.id, dice1 + dice2 + dice3)
-
           io.sendToTxUser({
             taixiu: {
               finish: {
