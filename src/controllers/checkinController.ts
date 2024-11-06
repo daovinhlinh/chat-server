@@ -83,6 +83,9 @@ const checkIn = async (
     session.endSession()
 
     return res.status(StatusCodes.OK).json({
+      data: {
+        coins: results[1].status === 'fulfilled' ? results[1].value?.coins : 0
+      },
       message: ReasonPhrases.OK,
       status: StatusCodes.OK
     })
