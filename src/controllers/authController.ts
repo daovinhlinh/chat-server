@@ -70,13 +70,13 @@ const signIn = async (
         status: StatusCodes.NOT_FOUND
       })
     }
-    console.log(userDoc)
-    if (!userDoc.verified) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: CustomReasonPhrases.ACCOUNT_NOT_VERIFIED,
-        status: StatusCodes.BAD_REQUEST
-      })
-    }
+
+    // if (!userDoc.verified) {
+    //   return res.status(StatusCodes.BAD_REQUEST).json({
+    //     message: CustomReasonPhrases.ACCOUNT_NOT_VERIFIED,
+    //     status: StatusCodes.BAD_REQUEST
+    //   })
+    // }
 
     const { token: accessToken } = jwtSign(
       userDoc.id,
