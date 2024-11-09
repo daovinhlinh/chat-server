@@ -55,6 +55,10 @@ const schema = new Schema<IUser, UserModel, IUserMethods>(
     verified: {
       type: Boolean,
       default: false
+    },
+    isGuest: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }

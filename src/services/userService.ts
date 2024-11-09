@@ -33,12 +33,14 @@ const create = async (
   {
     username,
     password,
-    role = UserRole.USER
+    role = UserRole.USER,
+    isGuest = false
   }: {
     username: string
     password: string
     verified?: boolean
     role: UserRole
+    isGuest: boolean
   },
   session?: ClientSession
 ) => {
@@ -47,7 +49,8 @@ const create = async (
       username,
       password,
       coins: 10000,
-      role
+      role,
+      isGuest
     })
     const saved = await user.save({ session })
     return saved

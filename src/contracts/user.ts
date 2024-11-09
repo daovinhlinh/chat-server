@@ -21,6 +21,7 @@ export interface IUser {
   nohu: number
   verified: boolean
   createdAt: Date
+  isGuest: boolean
 }
 
 export interface IUserMethods {

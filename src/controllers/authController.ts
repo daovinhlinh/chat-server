@@ -71,12 +71,12 @@ const signIn = async (
       })
     }
 
-    // if (!userDoc.verified) {
-    //   return res.status(StatusCodes.BAD_REQUEST).json({
-    //     message: CustomReasonPhrases.ACCOUNT_NOT_VERIFIED,
-    //     status: StatusCodes.BAD_REQUEST
-    //   })
-    // }
+    if (!userDoc.verified && !userDoc.isGuest) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: CustomReasonPhrases.ACCOUNT_NOT_VERIFIED,
+        status: StatusCodes.BAD_REQUEST
+      })
+    }
 
     const { token: accessToken } = jwtSign(
       userDoc.id,
@@ -112,7 +112,7 @@ const signIn = async (
 }
 
 const signUp = async (
-  { body: { username, password, role } }: IBodyRequest<SignUpPayload>,
+  { body: { username, password, role, isGuest } }: IBodyRequest<SignUpPayload>,
   res: Response
 ) => {
   const session = await startSession()
@@ -133,7 +133,8 @@ const signUp = async (
       {
         username,
         password: hashedPassword,
-        role
+        role,
+        isGuest
       },
       session
     )
@@ -229,6 +230,7 @@ const verifyOtp = (
         }
 
         user.verified = true
+        user.isGuest = false
         user.save()
 
         const { token: accessToken } = jwtSign(
@@ -483,6 +485,7 @@ const activate = async (
     ])
 
     updatedUser.verified = true
+    updatedUser.isGuest = false
     await updatedUser.save({ session })
     await session.commitTransaction()
     session.endSession()
