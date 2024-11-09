@@ -12,6 +12,7 @@ import { TaiXiuOne } from '~/models/TaiXiu_one'
 import { TaiXiuPhien } from '~/models/TaiXiu_phien'
 import { TaiXiuUser } from '~/models/TaiXiu_user'
 import { User } from '~/models/User'
+import { getGameSocket } from '~/sockets/gameSocket'
 import { getSocketServer } from '~/socketServer'
 import { bot } from './bot'
 export interface ServerToClientEvents {
@@ -1004,16 +1005,22 @@ const alertTopUser = async (phien: number) => {
       const user = listUser.find(user => user._id.toString() === topUser.uid)
 
       if (user) {
-        io.sendToTxUser({
-          taixiu: {
-            notification: {
-              top: {
-                name: user?.username,
-                betwin: topUser.betwin
-              }
-            }
-          }
-        })
+        // io.sendToTxUser({
+        //   taixiu: {
+        //     notification: {
+        //       top: {
+        //         name: user?.username,
+        //         betwin: topUser.betwin
+        //       }
+        //     }
+        //   }
+        // })
+        const gameSocket = getGameSocket()
+        if (gameSocket) {
+          gameSocket.broadcast.emit('receiveNotification', {
+            message: `${user?.username} đã giành được ${topUser.betwin} điểm thắng cao nhất trong phiên này!`
+          })
+        }
       }
     }
   }
@@ -1021,6 +1028,7 @@ const alertTopUser = async (phien: number) => {
 
 const playGame = () => {
   if (!io) return
+
   io.TaiXiu_time = 57
   gameLoop = setInterval(async () => {
     if (!io) return

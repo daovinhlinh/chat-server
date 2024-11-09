@@ -2,10 +2,16 @@ import { Server, Socket } from 'socket.io'
 import { ITaiXiuSocketData } from '~/contracts/taixiu'
 import { taixiuController } from '~/controllers/taixiuController'
 
-export default function gameSocket(io: Server) {
-  console.log('Game socket initialized')
+let gameSocketInstance: Socket
 
+export const getGameSocket = () => gameSocketInstance
+
+export default function gameSocket(io: Server) {
   io.on('connection', (socket: Socket) => {
+    if (socket) {
+      gameSocketInstance = socket
+    }
+
     socket.on('pushNotification', data => {
       try {
         console.log('Push notification:', data)

@@ -112,10 +112,10 @@ export const initializeSockets = (io: ExtendedServer) => {
       console.log(error)
     }
   })
-  initTaixiu()
 
   chatSocket(io)
   gameSocket(io)
+  initTaixiu()
 
   // taixiu
 }
