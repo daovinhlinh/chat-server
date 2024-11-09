@@ -8,10 +8,15 @@ const client = twilio(
 
 // send sms
 const sendSms = async (phone: string, message: string) => {
-  await client.messages.create({
-    body: message,
-    to: phone
-  })
+  try {
+    await client.messages.create({
+      body: message,
+      to: phone,
+      messagingServiceSid: process.env.TWILIO_SERVICE_SID
+    })
+  } catch (error) {
+    console.log('error', error)
+  }
 }
 
 export const smsService = {

@@ -75,7 +75,7 @@ export const auth = (router: Router): void => {
 
   router.post(
     '/auth/sign-out',
-    authGuard.isAuth,
+    authGuard.isGuest,
     authValidation.signOut,
     authController.signOut
   )

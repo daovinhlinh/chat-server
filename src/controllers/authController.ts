@@ -47,10 +47,12 @@ const sendOtp = async (username: string, phoneNumber: string) => {
     upperCaseAlphabets: false,
     specialChars: false
   })
-  console.log('otp', otp)
+
   await redis.client.set(`OTP_${username}`, otp, {
     EX: Number(process.env.OTP_EXPIRED_TIME)
   })
+
+  smsService.sendSms(phoneNumber, `OTP: ${otp}`)
 }
 
 const signIn = async (
@@ -69,37 +71,12 @@ const signIn = async (
       })
     }
     console.log(userDoc)
-    // if (!userDoc.verified) {
-    //   try {
-    //     // const otp = otpGenerator.generate(6, {
-    //     //   lowerCaseAlphabets: false,
-    //     //   upperCaseAlphabets: false,
-    //     //   specialChars: false
-    //     // })
-    //     // console.log('otp', otp)
-
-    //     // await redis.client.set(`OTP_${username}`, otp, {
-    //     //   EX: Number(process.env.OTP_EXPIRED_TIME)
-    //     // }) //expired in 1 minute
-
-    //     await sendOtp(username)
-    //     return res.status(StatusCodes.BAD_REQUEST).json({
-    //       data: {
-    //         expired_time: process.env.OTP_EXPIRED_TIME
-    //       },
-    //       message: CustomReasonPhrases.ACCOUNT_NOT_VERIFIED,
-    //       status: StatusCodes.BAD_REQUEST
-    //     })
-    //   } catch (error) {
-    //     console.error('Error sending email: ', error)
-    //     winston.error(error)
-    //     // console.error('Error storing OTP in Redis: ', err)
-    //     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-    //       message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-    //       status: StatusCodes.INTERNAL_SERVER_ERROR
-    //     })
-    //   }
-    // }
+    if (!userDoc.verified) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: CustomReasonPhrases.ACCOUNT_NOT_VERIFIED,
+        status: StatusCodes.BAD_REQUEST
+      })
+    }
 
     const { token: accessToken } = jwtSign(
       userDoc.id,
@@ -302,6 +279,9 @@ const resendOtp = async (
     await sendOtp(username, phoneNumber)
 
     return res.status(StatusCodes.OK).json({
+      data: {
+        expired_time: process.env.OTP_EXPIRED_TIME
+      },
       message: ReasonPhrases.OK,
       status: StatusCodes.OK
     })
