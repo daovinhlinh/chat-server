@@ -63,15 +63,32 @@ const addSpecialDay = async (date: Date, coins: number) => {
 }
 
 const isSpecialDay = async (date: Date) => {
-  // const checkin = await CheckInConfig.findOne({
-  //   specialDays: { $elemMatch: { date } }
-  // })
-  const checkin = await CheckInConfig.findOne(
-    { 'specialDays.date': date },
-    { 'specialDays.$': 1 }
-  )
+  const checkin = await CheckInConfig.findOne({
+    specialDays: {
+      $elemMatch: {
+        date: {
+          $gte: new Date(date.setHours(0, 0, 0, 0)),
+          $lt: new Date(date.setHours(23, 59, 59, 999))
+        }
+      }
+    }
+  })
 
-  return checkin ? checkin.specialDays[0] : null
+  if (!checkin || !checkin.specialDays.length) {
+    return null
+  }
+
+  // Find the matching special day
+  const specialDay = checkin.specialDays.find(day => {
+    const dayDate = new Date(day.date)
+    return (
+      dayDate.getUTCFullYear() === date.getUTCFullYear() &&
+      dayDate.getUTCMonth() === date.getUTCMonth() &&
+      dayDate.getUTCDate() === date.getUTCDate()
+    )
+  })
+
+  return specialDay || null
 }
 
 const updateSpecialDay = async (id: ObjectId, coins: number) => {
