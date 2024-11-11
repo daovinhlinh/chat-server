@@ -47,12 +47,12 @@ const sendOtp = async (username: string, phoneNumber: string) => {
     upperCaseAlphabets: false,
     specialChars: false
   })
-
+  const convertedPhoneNumber = `+84${phoneNumber.slice(1)}`
   await redis.client.set(`OTP_${username}`, otp, {
     EX: Number(process.env.OTP_EXPIRED_TIME)
   })
 
-  smsService.sendSms(phoneNumber, `OTP: ${otp}`)
+  smsService.sendSms(convertedPhoneNumber, `OTP: ${otp}`)
 }
 
 const signIn = async (
@@ -70,6 +70,8 @@ const signIn = async (
         status: StatusCodes.NOT_FOUND
       })
     }
+
+    console.log('userDoc', userDoc)
 
     if (!userDoc.verified && !userDoc.isGuest) {
       return res.status(StatusCodes.BAD_REQUEST).json({
