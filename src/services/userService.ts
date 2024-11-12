@@ -129,6 +129,9 @@ const searchByUsername = (
   )
 }
 
+const isExistByPhoneNumber = (phoneNumber: string) =>
+  User.exists({ phoneNumber })
+
 export const userService = {
   getAll,
   create,
@@ -140,5 +143,6 @@ export const userService = {
   updatePasswordByUserId,
   deleteById,
   searchByUsername,
-  updateUsernameByUserId
+  updateUsernameByUserId,
+  isExistByPhoneNumber
 }

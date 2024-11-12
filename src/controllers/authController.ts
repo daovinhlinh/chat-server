@@ -290,6 +290,17 @@ const resendOtp = async (
       })
     }
 
+    //check if phone number is existed in another user
+    const isPhoneNumberExisted =
+      await userService.isExistByPhoneNumber(phoneNumber)
+
+    if (isPhoneNumberExisted) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: CustomReasonPhrases.PHONE_NUMBER_EXISTED,
+        status: StatusCodes.BAD_REQUEST
+      })
+    }
+
     await sendOtp(username, phoneNumber)
 
     return res.status(StatusCodes.OK).json({
