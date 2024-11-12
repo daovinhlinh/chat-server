@@ -280,6 +280,16 @@ const resendOtp = async (
   res: Response
 ) => {
   try {
+    //get user by username
+    const user = await userService.getByUsername(username)
+
+    if (!user) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: CustomReasonPhrases.USER_NOT_FOUND,
+        status: StatusCodes.BAD_REQUEST
+      })
+    }
+
     await sendOtp(username, phoneNumber)
 
     return res.status(StatusCodes.OK).json({
