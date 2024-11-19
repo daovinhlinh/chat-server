@@ -12,6 +12,7 @@ import {
   IUserRequest
 } from '~/contracts/request'
 import { ITopUser } from '~/contracts/taixiu'
+import { UserRole } from '~/contracts/user'
 import { User } from '~/models/User'
 import { userService } from '~/services'
 import { gameService } from '~/services/gameService'
@@ -91,19 +92,31 @@ const getRanking = async (_: IContextRequest<IUserRequest>, res: Response) => {
       })
     }
 
-    const topUsers: ITopUser[] = await Promise.all(
+    const topUsers: (ITopUser | null)[] = await Promise.all(
       list.map(async obj => {
-        const result2 = await User.findById(obj.uid).exec()
-        return {
-          name: result2 ? result2.username : '',
-          bet: obj.total
-          // type: result2 ? result2.type : false
+        // const result2 = await User.findById(obj.uid).exec()
+        const result2 = await User.findOne({
+          _id: obj.uid,
+          role: UserRole.USER
+        }).exec()
+
+        if (result2) {
+          return {
+            name: result2 ? result2.username : '',
+            bet: obj.total
+            // type: result2 ? result2.type : false
+          }
         }
+
+        return null
       })
     )
 
+    //remove null from array
+    const filteredTopUsers = topUsers.filter(user => user !== null)
+
     return res.status(StatusCodes.OK).json({
-      data: topUsers,
+      data: filteredTopUsers,
       message: ReasonPhrases.OK,
       status: StatusCodes.OK
     })
