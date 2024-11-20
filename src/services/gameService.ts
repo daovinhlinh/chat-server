@@ -117,11 +117,29 @@ const getCoinsRanking = async (limit: number = 10) => {
   //   .limit(limit)
   //   .select('username email coins')
 
+  // try {
+  //   const results = await TaiXiuUser.find({ total: { $gt: 0 } }, 'total uid', {
+  //     sort: { total: -1 },
+  //     limit
+  //   }).exec()
+  //   return results
+  // } catch (err) {
+  //   console.error('Error in GetTop:', err)
+  // }
+
   try {
-    const results = await TaiXiuUser.find({ total: { $gt: 0 } }, 'total uid', {
-      sort: { total: -1 },
-      limit
-    }).exec()
+    const bot = await User.find({ username: /nohu/ }, '_id').exec()
+
+    const arraybot = bot.map(str => str._id.toString())
+
+    const results = await TaiXiuUser.find(
+      { $and: [{ uid: { $nin: arraybot } }, { total: { $gt: 0 } }] },
+      'total uid',
+      {
+        sort: { total: -1 },
+        limit
+      }
+    ).exec()
     return results
   } catch (err) {
     console.error('Error in GetTop:', err)
