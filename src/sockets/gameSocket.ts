@@ -14,8 +14,6 @@ export default function gameSocket(io: Server) {
 
     socket.on('pushNotification', data => {
       try {
-        console.log('Push notification:', data)
-
         socket.broadcast.emit('receiveNotification', {
           message: data
         })

@@ -1017,7 +1017,7 @@ const alertTopUser = async (phien: number) => {
         // })
         const gameSocket = getGameSocket()
         if (gameSocket) {
-          gameSocket.broadcast.emit('receiveNotification', {
+          gameSocket.emit('receiveNotification', {
             message: `${user?.username} đã giành được ${topUser.betwin} điểm thắng cao nhất trong phiên này!`
           })
         }
